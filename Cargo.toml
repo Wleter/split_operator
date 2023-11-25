@@ -1,0 +1,35 @@
+[package]
+name = "split_operator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+quantum = { git = "https://github.com/Wleter/quantum" }
+num = "0.4.0"
+rustfft = "6.1.0"
+criterion = "0.5.0"
+ndarray-npy = "0.8.1"
+gauss-quad = "0.1.5"
+scilib = "1.0.0"
+rayon = "1.7.0"
+ndarray = { version = "0.15.6", features = ["rayon", "matrixmultiply-threading"] }
+dyn-clone = "1.0.12"
+pyo3 = { version = "0.20.0", features = ["auto-initialize"] }
+enum-flags = "0.3.0"
+
+[profile.test]
+opt-level = 3
+
+[[bench]]
+name = "dispatch"
+harness = false
+
+[[bench]]
+name = "lane_map"
+harness = false
+
+[[bench]]
+name = "fft_lane"
+harness = false

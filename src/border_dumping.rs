@@ -6,8 +6,9 @@ use num::complex::Complex64;
 use crate::{
     control::Control,
     grid::Grid,
+    loss_checker::LossChecker,
     propagator::{one_dim_propagator::OneDimPropagator, Propagator},
-    wave_function::WaveFunction, loss_checker::LossChecker,
+    wave_function::WaveFunction,
 };
 
 pub fn dumping_end(mask_width: f64, mask_end: f64, grid: &Grid) -> Array1<Complex64> {
@@ -42,13 +43,15 @@ impl<N: Dimension> BorderDumping<N> {
         mask: Array1<Complex64>,
         _example_wave_function: &WaveFunction<N>,
         grid: &Grid,
-
     ) -> Self {
         let mut operator =
             OneDimPropagator::new(_example_wave_function, mask.len(), grid.dimension_no);
         operator.set_operator(mask);
 
-        BorderDumping { operator, loss_checked: None }
+        BorderDumping {
+            operator,
+            loss_checked: None,
+        }
     }
 
     pub fn add_loss_checker(&mut self, loss_checker: LossChecker) {
@@ -67,7 +70,7 @@ impl<N: Dimension> Control<N> for BorderDumping<N> {
         }
 
         self.operator.apply(wave_function);
-        
+
         if let Some(loss_checker) = &mut self.loss_checked {
             loss_checker.check_after(wave_function);
         }
@@ -87,7 +90,7 @@ impl<N: Dimension> Control<N> for BorderDumping<N> {
 
     fn loss(&self) -> &Option<LossChecker> {
         &self.loss_checked
-    } 
+    }
 
     fn loss_mut(&mut self) -> &mut Option<LossChecker> {
         &mut self.loss_checked

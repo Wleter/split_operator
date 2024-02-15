@@ -2,7 +2,6 @@ use std::{fs::File, io::Write};
 
 use crate::time_grid::TimeGrid;
 
-
 #[derive(Clone)]
 pub struct LossSaver {
     pub name: String,
@@ -11,7 +10,7 @@ pub struct LossSaver {
     frames_no: usize,
     total_frames: usize,
     step: f64,
-    times: Vec<f64>
+    times: Vec<f64>,
 }
 
 impl LossSaver {
@@ -23,7 +22,7 @@ impl LossSaver {
             frames_no,
             total_frames: time_grid.step_no,
             step: time_grid.step,
-            times: Vec::with_capacity(frames_no)
+            times: Vec::with_capacity(frames_no),
         }
     }
 
@@ -32,7 +31,8 @@ impl LossSaver {
 
         if self.current_frame % frequency == 0 && self.current_frame / frequency < self.frames_no {
             self.losses.push(loss);
-            self.times.push((self.current_frame as f64 + 1.0) * self.step);
+            self.times
+                .push((self.current_frame as f64 + 1.0) * self.step);
         }
 
         self.current_frame += 1;

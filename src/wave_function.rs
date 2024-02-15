@@ -96,7 +96,7 @@ impl<N: Dimension> WaveFunction<N> {
             .and(&self.weight_amplitude_array)
             .fold(Complex64::new(0.0, 0.0), |acc, x, y, w1| {
                 acc + x * y.conj() * w1.norm_sqr()
-            }); 
+            });
 
         dot_prod / (norm_1 * norm_2).sqrt()
     }

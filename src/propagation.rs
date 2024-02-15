@@ -260,7 +260,10 @@ impl<N: Dimension> Propagation<N> {
         if self.time_grid.im_time == true {
             match &mut self.operations[0] {
                 Operations::Control(control, _) => {
-                    assert!(control.borrow().name() == "LeakControl", "For imaginary time propagation first control must be LeakControl.");
+                    assert!(
+                        control.borrow().name() == "LeakControl",
+                        "For imaginary time propagation first control must be LeakControl."
+                    );
                     let mut borrowed_control = control.borrow_mut();
                     let loss = borrowed_control.loss_mut();
 
@@ -269,34 +272,33 @@ impl<N: Dimension> Propagation<N> {
                     } else {
                         panic!("Leak control must have loss checker to get mean energy for imaginary time.")
                     }
-                },
-                _ => panic!("")
+                }
+                _ => panic!(""),
             }
             self.step();
-            
+
             let decay = match &self.operations[0] {
                 Operations::Control(control, _) => {
                     let mut borrowed_control = control.borrow_mut();
                     let loss = borrowed_control.loss_mut();
-                    
+
                     if let Some(loss) = loss {
                         loss.loss()
                     } else {
                         panic!("Leak control must have loss checker to get mean energy.")
                     }
-
-                },
-                _ => panic!("")
+                }
+                _ => panic!(""),
             };
-            
-            let energy = - (self.wave_function.norm() - decay).ln() / self.time_grid.step;
+
+            let energy = -(self.wave_function.norm() - decay).ln() / self.time_grid.step;
             energy
         } else {
             let mut wave_before = self.wave_function.clone();
             self.step();
             let mut wave_after = self.wave_function.clone();
 
-            let energy = - wave_after.dot(&mut wave_before).arg() / self.time_grid.step;
+            let energy = -wave_after.dot(&mut wave_before).arg() / self.time_grid.step;
             energy
         }
     }

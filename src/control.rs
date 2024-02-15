@@ -2,7 +2,7 @@ use dyn_clone::DynClone;
 use enum_flags::enum_flags;
 use ndarray::Dimension;
 
-use crate::{wave_function::WaveFunction, loss_checker::LossChecker};
+use crate::{loss_checker::LossChecker, wave_function::WaveFunction};
 
 /// Trait for controlling the wave function during propagation.
 pub trait Control<N: Dimension>: DynClone {

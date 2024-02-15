@@ -28,7 +28,11 @@ use crate::{
 };
 use ndarray::{Array1, Array2, Ix2};
 use num::complex::Complex64;
-use quantum::{particle_factory::{create_atom, create_molecule}, particles::Particles, units::energy_units::{Energy, Kelvin}};
+use quantum::{
+    particle_factory::{create_atom, create_molecule},
+    particles::Particles,
+    units::energy_units::{Energy, Kelvin},
+};
 use scilib::math::polynomial::Poly;
 
 use crate::potential_reader::load_potential;
@@ -59,7 +63,7 @@ impl NeOcs {
         self.propagation.set_time_grid(TimeGrid {
             step: time_step,
             step_no: steps_no,
-            im_time: false
+            im_time: false,
         });
     }
 
@@ -103,7 +107,8 @@ impl NeOcs {
         let ne = create_atom("Ne").unwrap();
         let ocs = create_molecule("OCS").unwrap();
         self.collision_params = Particles::new_pair(ne, ocs, energy);
-        self.collision_params.internals
+        self.collision_params
+            .internals
             .insert_value("j_init", j_init as f64)
             .insert_value("omega_init", omega_init as f64)
             .insert_value("j_total", j_tot as f64);
@@ -114,8 +119,10 @@ impl NeOcs {
         let mut wave_function_array =
             Array2::<Complex64>::ones((self.r_grid.nodes_no, self.polar_grid.nodes_no));
 
-        let momentum =
-            (2.0 * self.collision_params.red_mass() * self.collision_params.internals.get_value("energy")).sqrt();
+        let momentum = (2.0
+            * self.collision_params.red_mass()
+            * self.collision_params.internals.get_value("energy"))
+        .sqrt();
 
         let r_init = self
             .r_grid
@@ -177,7 +184,12 @@ impl NeOcs {
 
     /// Append to the propagation or replace existing angular kinetic operator.
     pub fn set_angular_operator(&mut self) {
-        let rot_const = self.collision_params.particle_mut("OCS").unwrap().internals.get_value("rot_const");
+        let rot_const = self
+            .collision_params
+            .particle_mut("OCS")
+            .unwrap()
+            .internals
+            .get_value("rot_const");
 
         let angular_operator = rotational_hamiltonian(
             &self.r_grid,

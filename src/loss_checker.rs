@@ -1,6 +1,6 @@
 use ndarray::Dimension;
 
-use crate::{wave_function::WaveFunction, loss_saver::LossSaver, time_grid::TimeGrid};
+use crate::{loss_saver::LossSaver, time_grid::TimeGrid, wave_function::WaveFunction};
 
 /// Checks the loss of norm of the wave function.
 /// `LossChecker` is used to check loss of norm of the wave function during the use of `Propagator` on wave function if needed.
@@ -24,7 +24,12 @@ impl LossChecker {
         }
     }
 
-    pub fn new_with_saver(name: &'static str, frames_no: usize, filename: String, time_grid: &TimeGrid) -> LossChecker {
+    pub fn new_with_saver(
+        name: &'static str,
+        frames_no: usize,
+        filename: String,
+        time_grid: &TimeGrid,
+    ) -> LossChecker {
         LossChecker {
             name,
             loss: 0.0,

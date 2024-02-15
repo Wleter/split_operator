@@ -28,7 +28,7 @@ fn dynamic_dispatch_benchmark(c: &mut Criterion) {
     let time_grid = TimeGrid {
         step: 1.0,
         step_no: 1,
-        im_time: false
+        im_time: false,
     };
     let mut propagation = Propagation::new(wf.clone(), time_grid);
     propagation.add_propagator(boxed2);

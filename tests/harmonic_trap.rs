@@ -2,7 +2,11 @@
 pub mod harmonic_trap {
     use ndarray::{Array1, Ix1};
     use num::complex::Complex64;
-    use quantum::{particle_factory::create_atom, particles::Particles, units::energy_units::{Energy, Kelvin}};
+    use quantum::{
+        particle_factory::create_atom,
+        particles::Particles,
+        units::energy_units::{Energy, Kelvin},
+    };
     use split_operator::{
         control::Apply,
         grid::Grid,
@@ -43,7 +47,7 @@ pub mod harmonic_trap {
             let time_grid = TimeGrid {
                 step: 3.0,
                 step_no: 1000,
-                im_time: is_imaginary_time
+                im_time: is_imaginary_time,
             };
             propagation.set_time_grid(time_grid.clone());
 
@@ -70,7 +74,7 @@ pub mod harmonic_trap {
                 potential,
                 &grid,
                 &time_grid,
-                TimeStep::Half
+                TimeStep::Half,
             );
 
             let fft_transform = FFTDiagonalization::new(&wave_function, &grid, "momentum");
@@ -80,7 +84,7 @@ pub mod harmonic_trap {
                 kinetic_hamiltonian,
                 &grid,
                 &time_grid,
-                TimeStep::Full
+                TimeStep::Full,
             );
 
             let saver = StateSaver::new(

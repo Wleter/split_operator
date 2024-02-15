@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use ndarray::Dimension;
 
-use crate::{control::Control, wave_function::WaveFunction, loss_checker::LossChecker};
+use crate::{control::Control, loss_checker::LossChecker, wave_function::WaveFunction};
 
 /// Controls the norm of the wave function during propagation.
 /// Used when transformations of the wave function loss some of its norm due to numerical stability.
@@ -19,7 +19,7 @@ impl<N: Dimension> LeakControl<N> {
         LeakControl {
             norm: 0.0,
             phantom: PhantomData,
-            loss_checked: None
+            loss_checked: None,
         }
     }
 
@@ -33,7 +33,7 @@ impl<N: Dimension> Control<N> for LeakControl<N> {
         "LeakControl"
     }
 
-    fn first_half(&mut self, wave_function: &mut WaveFunction<N>) {  
+    fn first_half(&mut self, wave_function: &mut WaveFunction<N>) {
         self.norm = wave_function.norm();
 
         if let Some(loss_checker) = &mut self.loss_checked {
@@ -45,7 +45,7 @@ impl<N: Dimension> Control<N> for LeakControl<N> {
         if let Some(loss_checker) = &mut self.loss_checked {
             loss_checker.check_after(wave_function);
         }
-        
+
         wave_function.normalize(self.norm);
     }
 

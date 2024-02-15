@@ -6,7 +6,11 @@ mod ground_state_tests {
 
     use ndarray::{Array1, Ix1};
     use num::complex::Complex64;
-    use quantum::{particle_factory::create_atom, particles::Particles, units::energy_units::{Energy, Kelvin}};
+    use quantum::{
+        particle_factory::create_atom,
+        particles::Particles,
+        units::energy_units::{Energy, Kelvin},
+    };
     use split_operator::{
         control::Apply,
         grid::Grid,
@@ -14,13 +18,14 @@ mod ground_state_tests {
             analytic_potentials::lennard_jones, kinetic_operator::kinetic_hamiltonian,
         },
         leak_control::LeakControl,
+        loss_checker::LossChecker,
         propagation::Propagation,
         propagator::{
             fft_diagonalization::FFTDiagonalization, propagator_factory::one_dim_into_propagator,
         },
         time_grid::{TimeGrid, TimeStep},
         wave_function::{gaussian_distribution, WaveFunction},
-        wave_function_saver::StateSaver, loss_checker::LossChecker,
+        wave_function_saver::StateSaver,
     };
 
     #[test]
@@ -58,7 +63,10 @@ mod ground_state_tests {
                 Energy(1e-7, Kelvin),
             );
 
-            let momentum = (2.0 * collision_params.red_mass() * collision_params.internals.get_value("energy")).sqrt();
+            let momentum = (2.0
+                * collision_params.red_mass()
+                * collision_params.internals.get_value("energy"))
+            .sqrt();
             let mut wave_function_array = Array1::<Complex64>::zeros(x_no);
             for (i, x) in grid.nodes.iter().enumerate() {
                 wave_function_array[i] = gaussian_distribution(*x, 14.0, 2.0, momentum);
@@ -70,7 +78,7 @@ mod ground_state_tests {
             let time_grid = TimeGrid {
                 step: 50.0,
                 step_no: 1000,
-                im_time: true
+                im_time: true,
             };
             propagation.set_time_grid(time_grid.clone());
 

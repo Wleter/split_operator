@@ -28,7 +28,7 @@ use crate::{
 };
 use ndarray::{Array1, Array2, Ix2};
 use num::complex::Complex64;
-use quantum::{particles::Particles, particle_factory::{create_molecule, create_atom}, units::energy_units::EnergyUnit};
+use quantum::{particle_factory::{create_atom, create_molecule}, particles::Particles, units::energy_units::{Energy, Kelvin}};
 use scilib::math::polynomial::Poly;
 
 use crate::potential_reader::load_potential;
@@ -99,7 +99,7 @@ impl NeOcs {
         omega_init: usize,
         j_tot: usize,
     ) {
-        let energy = EnergyUnit::Kelvin.to_au(energy_kelvin);
+        let energy = Energy(energy_kelvin, Kelvin);
         let ne = create_atom("Ne").unwrap();
         let ocs = create_molecule("OCS").unwrap();
         self.collision_params = Particles::new_pair(ne, ocs, energy);
@@ -177,7 +177,7 @@ impl NeOcs {
 
     /// Append to the propagation or replace existing angular kinetic operator.
     pub fn set_angular_operator(&mut self) {
-        let rot_const = self.collision_params.particle_mut("OCS").internals.get_value("rot_const");
+        let rot_const = self.collision_params.particle_mut("OCS").unwrap().internals.get_value("rot_const");
 
         let angular_operator = rotational_hamiltonian(
             &self.r_grid,

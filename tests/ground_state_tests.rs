@@ -6,7 +6,7 @@ mod ground_state_tests {
 
     use ndarray::{Array1, Ix1};
     use num::complex::Complex64;
-    use quantum::{particles::Particles, particle_factory::create_atom, units::energy_units::EnergyUnit};
+    use quantum::{particle_factory::create_atom, particles::Particles, units::energy_units::{Energy, Kelvin}};
     use split_operator::{
         control::Apply,
         grid::Grid,
@@ -55,7 +55,7 @@ mod ground_state_tests {
             let collision_params = Particles::new_pair(
                 create_atom("Li6").unwrap(),
                 create_atom("Li7").unwrap(),
-                EnergyUnit::Kelvin.to_au(1e-7),
+                Energy(1e-7, Kelvin),
             );
 
             let momentum = (2.0 * collision_params.red_mass() * collision_params.internals.get_value("energy")).sqrt();

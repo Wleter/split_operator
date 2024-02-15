@@ -2,7 +2,7 @@
 pub mod harmonic_trap {
     use ndarray::{Array1, Ix1};
     use num::complex::Complex64;
-    use quantum::{particles::Particles, particle_factory::create_atom, units::energy_units::EnergyUnit};
+    use quantum::{particle_factory::create_atom, particles::Particles, units::energy_units::{Energy, Kelvin}};
     use split_operator::{
         control::Apply,
         grid::Grid,
@@ -50,7 +50,7 @@ pub mod harmonic_trap {
             let collision_params = Particles::new_pair(
                 create_atom("Li6").unwrap(),
                 create_atom("Li7").unwrap(),
-                EnergyUnit::Kelvin.to_au(1000.0),
+                Energy(1000.0, Kelvin),
             );
 
             let mut potential = Array1::<f64>::zeros(256);

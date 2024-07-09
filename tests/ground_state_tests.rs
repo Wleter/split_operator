@@ -19,9 +19,9 @@ mod ground_state_tests {
         },
         leak_control::LeakControl,
         loss_checker::LossChecker,
-        propagation::Propagation,
+        propagation::{OperationStack, Propagation},
         propagator::{
-            fft_diagonalization::FFTDiagonalization, propagator_factory::one_dim_into_propagator,
+            fft_transformation::FFTTransformation, propagator_factory::one_dim_into_propagator, transformation::Order,
         },
         time_grid::{TimeGrid, TimeStep},
         wave_function::{gaussian_distribution, WaveFunction},
@@ -41,7 +41,6 @@ mod ground_state_tests {
     }
 
     #[allow(dead_code)]
-    #[derive(Clone)]
     struct OneChannelPropagation {
         propagation: Propagation<Ix1>,
         wave_function: WaveFunction<Ix1>,
@@ -112,7 +111,7 @@ mod ground_state_tests {
                 &time_grid,
                 TimeStep::Full,
             );
-            let fft_transform = FFTDiagonalization::new(&wave_function, &grid, "momentum");
+            let fft_transform = FFTTransformation::new(&wave_function, &grid, "momentum");
 
             let name = "lj_ground_space".to_string();
             let wave_function_saver = StateSaver::new(
@@ -127,11 +126,14 @@ mod ground_state_tests {
             let mut leak_control = LeakControl::new(&wave_function);
             leak_control.add_loss_checker(LossChecker::new("leak control"));
 
-            propagation.add_control(Box::new(leak_control), Apply::FirstHalf | Apply::SecondHalf);
-            propagation.add_saver(Box::new(wave_function_saver), true);
-            propagation.add_propagator(Box::new(potential_propagator));
-            propagation.add_diagonalization(Box::new(fft_transform), true);
-            propagation.add_propagator(Box::new(kinetic_propagator));
+            let operation_stack = OperationStack::new()
+                .add_control(Box::new(leak_control), Apply::FirstHalf | Apply::SecondHalf)
+                .add_saver(Box::new(wave_function_saver), Apply::FirstHalf)
+                .add_propagator(Box::new(potential_propagator))
+                .add_transformation(Box::new(fft_transform), Order::Normal)
+                .add_propagator(Box::new(kinetic_propagator));
+
+            propagation.set_operation_stack(operation_stack);
 
             Self {
                 propagation,

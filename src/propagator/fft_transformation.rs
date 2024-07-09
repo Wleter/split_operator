@@ -2,14 +2,14 @@ use std::{f64::consts::PI, marker::PhantomData, sync::Arc};
 
 use crate::{grid::Grid, wave_function::WaveFunction};
 
-use super::diagonalization::Diagonalization;
+use super::transformation::Transformation;
 use ndarray::{Axis, Dimension, Zip};
 use num::complex::Complex64;
 use rustfft::{Fft, FftPlanner};
 
 /// Diagonalization to operator eigenspace using Fourier transformation.
 #[derive(Clone)]
-pub struct FFTDiagonalization<N: Dimension> {
+pub struct FFTTransformation<N: Dimension> {
     dimension_no: usize,
     dimension_size: usize,
 
@@ -21,13 +21,13 @@ pub struct FFTDiagonalization<N: Dimension> {
     phantom: PhantomData<N>,
 }
 
-impl<N: Dimension> FFTDiagonalization<N> {
+impl<N: Dimension> FFTTransformation<N> {
     /// Creates new [`FFTDiagonalization`] along given grid that transforms this grid into new grid with name `transformed_grid_name`.
     pub fn new(
         _example_wave_function: &WaveFunction<N>,
         grid: &Grid,
         transformed_grid_name: &str,
-    ) -> FFTDiagonalization<N> {
+    ) -> FFTTransformation<N> {
         let fft = FftPlanner::new().plan_fft_forward(grid.nodes_no);
         let ifft = FftPlanner::new().plan_fft_inverse(grid.nodes_no);
 
@@ -44,7 +44,7 @@ impl<N: Dimension> FFTDiagonalization<N> {
 
         let grid = Grid::new_custom(transformed_grid_name, momenta, weights, grid.dimension_no);
 
-        FFTDiagonalization {
+        FFTTransformation {
             dimension_no: grid.dimension_no,
             dimension_size: grid.nodes_no,
             fft: Box::new(fft),
@@ -55,9 +55,9 @@ impl<N: Dimension> FFTDiagonalization<N> {
     }
 }
 
-impl<N: Dimension> Diagonalization<N> for FFTDiagonalization<N> {
+impl<N: Dimension> Transformation<N> for FFTTransformation<N> {
     #[inline(always)]
-    fn diagonalize(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn transform(&mut self, wave_function: &mut WaveFunction<N>) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 
@@ -76,7 +76,7 @@ impl<N: Dimension> Diagonalization<N> for FFTDiagonalization<N> {
     }
 
     #[inline(always)]
-    fn inverse_diagonalize(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn inverse_transform(&mut self, wave_function: &mut WaveFunction<N>) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 

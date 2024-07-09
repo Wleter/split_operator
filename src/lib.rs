@@ -14,7 +14,6 @@ pub mod time_grid;
 pub mod wave_function;
 pub mod wave_function_saver;
 
-pub mod ne_ocs_propagation;
 pub mod potential_reader;
 
 pub fn add(left: usize, right: usize) -> usize {

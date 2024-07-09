@@ -4,7 +4,7 @@ mod fft_tests {
     use num::complex::Complex64;
     use split_operator::{
         grid::Grid,
-        propagator::{diagonalization::Diagonalization, fft_diagonalization::FFTDiagonalization},
+        propagator::{transformation::Transformation, fft_transformation::FFTTransformation},
         wave_function::WaveFunction,
     };
 
@@ -40,11 +40,11 @@ mod fft_tests {
         ]);
 
         let mut wf = WaveFunction::new(wf_array.clone(), vec![grid1.clone(), grid2.clone()]);
-        let mut fft_diag = FFTDiagonalization::new(&wf, &grid1, "a_fft");
+        let mut fft_diag = FFTTransformation::new(&wf, &grid1, "a_fft");
 
-        fft_diag.diagonalize(&mut wf);
+        fft_diag.transform(&mut wf);
         let wf_array_transformed = wf.array.clone();
-        fft_diag.inverse_diagonalize(&mut wf);
+        fft_diag.inverse_transform(&mut wf);
 
         let transformed_array = arr2(&[
             [
@@ -109,12 +109,12 @@ mod fft_tests {
         ]);
 
         let mut wf = WaveFunction::new(wf_array, vec![grid1.clone(), grid2.clone()]);
-        let mut fft_diag = FFTDiagonalization::new(&wf, &grid1, "a_fft");
+        let mut fft_diag = FFTTransformation::new(&wf, &grid1, "a_fft");
 
         let norm1 = wf.norm();
-        fft_diag.diagonalize(&mut wf);
+        fft_diag.transform(&mut wf);
         let norm2 = wf.norm();
-        fft_diag.inverse_diagonalize(&mut wf);
+        fft_diag.inverse_transform(&mut wf);
         let norm3 = wf.norm();
 
         println!("{}", norm1);

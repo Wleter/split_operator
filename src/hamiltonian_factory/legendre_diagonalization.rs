@@ -3,7 +3,7 @@ use num::complex::Complex64;
 
 use crate::{
     grid::Grid,
-    propagator::matrix_diagonalization::{MatrixDiagonalization, MatrixDiagonalization2D},
+    propagator::matrix_transformation::{MatrixTransformation, MatrixDiagonalization2D},
     special_functions::legendre_polynomials,
     wave_function::WaveFunction,
 };
@@ -12,7 +12,7 @@ use crate::{
 pub fn legendre_diagonalization_operator<N: Dimension>(
     example_wave_function: &WaveFunction<N>,
     polar_grid: &Grid,
-) -> MatrixDiagonalization<N> {
+) -> MatrixTransformation<N> {
     let l_max = polar_grid.nodes_no as i64 - 1;
     let l: Vec<i64> = (0..(l_max + 1)).collect();
 
@@ -25,7 +25,7 @@ pub fn legendre_diagonalization_operator<N: Dimension>(
     );
 
     let mut legendre_diagonalization =
-        MatrixDiagonalization::new(&example_wave_function, &polar_grid, l_grid);
+        MatrixTransformation::new(&example_wave_function, &polar_grid, l_grid);
     let mut transformation: Array2<Complex64> =
         Array2::<Complex64>::zeros((polar_grid.nodes_no, polar_grid.nodes_no));
 

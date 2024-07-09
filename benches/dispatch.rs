@@ -3,7 +3,7 @@ use ndarray::{arr1, Array3};
 use num::complex::Complex64;
 use split_operator::{
     grid::Grid,
-    propagation::Propagation,
+    propagation::{OperationStack, Propagation},
     propagator::{one_dim_propagator::OneDimPropagator, Propagator},
     time_grid::TimeGrid,
     wave_function::WaveFunction,
@@ -30,8 +30,10 @@ fn dynamic_dispatch_benchmark(c: &mut Criterion) {
         step_no: 1,
         im_time: false,
     };
-    let mut propagation = Propagation::new(wf.clone(), time_grid);
-    propagation.add_propagator(boxed2);
+    let operation_stack = OperationStack::new()
+        .add_propagator(boxed2);
+
+    let mut propagation = Propagation::new(wf.clone(), time_grid, operation_stack);
 
     c.bench_function("boxed propagator", |c| {
         c.iter(|| {

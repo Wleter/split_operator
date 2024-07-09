@@ -15,7 +15,6 @@ gauss-quad = "*"
 scilib = "*"
 rayon = "*"
 ndarray = { version = "*", features = ["rayon", "matrixmultiply-threading"] }
-dyn-clone = "*"
 pyo3 = { version = "*", features = ["auto-initialize"] }
 enum-flags = "*"
 

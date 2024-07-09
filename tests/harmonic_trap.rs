@@ -14,9 +14,9 @@ pub mod harmonic_trap {
             analytic_potentials::harmonic, kinetic_operator::kinetic_hamiltonian,
         },
         leak_control::LeakControl,
-        propagation::Propagation,
+        propagation::{OperationStack, Propagation},
         propagator::{
-            fft_diagonalization::FFTDiagonalization, propagator_factory::one_dim_into_propagator,
+            fft_transformation::FFTTransformation, propagator_factory::one_dim_into_propagator, transformation::Order,
         },
         time_grid::{TimeGrid, TimeStep},
         wave_function::{gaussian_distribution, WaveFunction},
@@ -24,7 +24,6 @@ pub mod harmonic_trap {
     };
 
     #[allow(dead_code)]
-    #[derive(Clone)]
     pub struct HarmonicTrap {
         propagation: Propagation<Ix1>,
         wave_function: WaveFunction<Ix1>,
@@ -77,7 +76,7 @@ pub mod harmonic_trap {
                 TimeStep::Half,
             );
 
-            let fft_transform = FFTDiagonalization::new(&wave_function, &grid, "momentum");
+            let fft_transform = FFTTransformation::new(&wave_function, &grid, "momentum");
             let kinetic_hamiltonian = kinetic_hamiltonian(&grid, &collision_params);
             let kinetic_propagator = one_dim_into_propagator(
                 &wave_function,
@@ -96,14 +95,17 @@ pub mod harmonic_trap {
                 &wave_function,
             );
 
-            propagation.add_saver(Box::new(saver), true);
-            propagation.add_control(
-                Box::new(LeakControl::new(&wave_function)),
-                Apply::FirstHalf | Apply::SecondHalf,
-            );
-            propagation.add_propagator(Box::new(potential_propagator));
-            propagation.add_diagonalization(Box::new(fft_transform), true);
-            propagation.add_propagator(Box::new(kinetic_propagator));
+            let operation_stack = OperationStack::new()
+                .add_saver(Box::new(saver), Apply::FirstHalf)
+                .add_control(
+                    Box::new(LeakControl::new(&wave_function)),
+                    Apply::FirstHalf | Apply::SecondHalf
+                )
+                .add_propagator(Box::new(potential_propagator))
+                .add_transformation(Box::new(fft_transform), Order::Normal)
+                .add_propagator(Box::new(kinetic_propagator));
+
+            propagation.set_operation_stack(operation_stack);
 
             Self {
                 propagation,

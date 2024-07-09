@@ -2,13 +2,13 @@ use std::marker::PhantomData;
 
 use crate::{grid::Grid, wave_function::WaveFunction};
 
-use super::diagonalization::Diagonalization;
+use super::transformation::Transformation;
 use ndarray::{Array2, Axis, Dimension, Ix2, Zip};
 use num::complex::Complex64;
 
 /// Diagonalization to operator eigenspace using matrix transformation.
 #[derive(Clone)]
-pub struct MatrixDiagonalization<N: Dimension> {
+pub struct MatrixTransformation<N: Dimension> {
     dimension_no: usize,
     dimension_size: usize,
 
@@ -20,17 +20,17 @@ pub struct MatrixDiagonalization<N: Dimension> {
     phantom: PhantomData<N>,
 }
 
-impl<N: Dimension> MatrixDiagonalization<N> {
+impl<N: Dimension> MatrixTransformation<N> {
     /// Creates new [`MatrixDiagonalization`] along given grid that transforms this grid into new grid `grid_transformation`.
     pub fn new(
         example_wave_function: &WaveFunction<N>,
         grid: &Grid,
         grid_transformation: Grid,
-    ) -> MatrixDiagonalization<N> {
+    ) -> MatrixTransformation<N> {
         assert!(grid.dimension_no < example_wave_function.array.ndim());
         assert!(grid.nodes_no == example_wave_function.array.shape()[grid.dimension_no]);
 
-        MatrixDiagonalization {
+        MatrixTransformation {
             dimension_no: grid.dimension_no,
             dimension_size: grid.nodes_no,
             transformation: Array2::zeros((grid.nodes_no, grid.nodes_no)),
@@ -59,9 +59,9 @@ impl<N: Dimension> MatrixDiagonalization<N> {
     }
 }
 
-impl<N: Dimension> Diagonalization<N> for MatrixDiagonalization<N> {
+impl<N: Dimension> Transformation<N> for MatrixTransformation<N> {
     #[inline(always)]
-    fn diagonalize(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn transform(&mut self, wave_function: &mut WaveFunction<N>) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 
@@ -70,7 +70,7 @@ impl<N: Dimension> Diagonalization<N> for MatrixDiagonalization<N> {
     }
 
     #[inline(always)]
-    fn inverse_diagonalize(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn inverse_transform(&mut self, wave_function: &mut WaveFunction<N>) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 
@@ -129,8 +129,8 @@ impl MatrixDiagonalization2D {
     }
 }
 
-impl Diagonalization<Ix2> for MatrixDiagonalization2D {
-    fn diagonalize(&mut self, wave_function: &mut WaveFunction<Ix2>) {
+impl Transformation<Ix2> for MatrixDiagonalization2D {
+    fn transform(&mut self, wave_function: &mut WaveFunction<Ix2>) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 
@@ -143,7 +143,7 @@ impl Diagonalization<Ix2> for MatrixDiagonalization2D {
         }
     }
 
-    fn inverse_diagonalize(&mut self, wave_function: &mut WaveFunction<Ix2>) {
+    fn inverse_transform(&mut self, wave_function: &mut WaveFunction<Ix2>) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 

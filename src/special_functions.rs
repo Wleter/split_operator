@@ -31,8 +31,7 @@ pub fn legendre_polynomials(j: usize, x: f64) -> Vec<f64> {
     p[1] = x;
 
     for i in 2..=j {
-        p[i] =
-            ((2 * i - 1) as f64 / i as f64) * x * p[i - 1] - ((i - 1) as f64 / i as f64) * p[i - 2];
+        p[i] = ((2 * i - 1) as f64 / i as f64) * x * p[i - 1] - ((i - 1) as f64 / i as f64) * p[i - 2];
     }
 
     p

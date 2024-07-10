@@ -14,8 +14,6 @@ pub mod time_grid;
 pub mod wave_function;
 pub mod wave_function_saver;
 
-pub mod potential_reader;
-
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }

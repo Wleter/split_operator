@@ -12,10 +12,8 @@ rustfft = "*"
 criterion = "*"
 ndarray-npy = "*"
 gauss-quad = "*"
-scilib = "*"
 rayon = "*"
 ndarray = { version = "*", features = ["rayon", "matrixmultiply-threading"] }
-pyo3 = { version = "*", features = ["auto-initialize"] }
 enum-flags = "*"
 
 [profile.test]

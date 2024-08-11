@@ -20,10 +20,6 @@ enum-flags = "*"
 opt-level = 3
 
 [[bench]]
-name = "dispatch"
-harness = false
-
-[[bench]]
 name = "lane_map"
 harness = false
 

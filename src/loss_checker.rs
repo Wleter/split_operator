@@ -1,5 +1,3 @@
-use ndarray::Dimension;
-
 use crate::{loss_saver::LossSaver, time_grid::TimeGrid, wave_function::WaveFunction};
 
 /// Checks the loss of norm of the wave function.
@@ -48,12 +46,12 @@ impl LossChecker {
     }
 
     /// Check the norm of the wave function before possible norm change.
-    pub fn check_before<N: Dimension>(&mut self, wave_function: &mut WaveFunction<N>) {
+    pub fn check_before(&mut self, wave_function: &mut WaveFunction) {
         self.current_norm = wave_function.norm();
     }
 
     /// Check the norm of the wave function after possible norm change.
-    pub fn check_after<N: Dimension>(&mut self, wave_function: &mut WaveFunction<N>) {
+    pub fn check_after(&mut self, wave_function: &mut WaveFunction) {
         let new_norm = wave_function.norm();
         self.loss += self.current_norm - new_norm;
 

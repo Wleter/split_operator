@@ -1,6 +1,6 @@
 #[cfg(test)]
 pub mod harmonic_trap {
-    use ndarray::{Array1, Ix1};
+    use ndarray::{Array1, ArrayD, IxDyn};
     use num::complex::Complex64;
     use quantum::{
         particle_factory::create_atom,
@@ -25,8 +25,8 @@ pub mod harmonic_trap {
 
     #[allow(dead_code)]
     pub struct HarmonicTrap {
-        propagation: Propagation<Ix1>,
-        wave_function: WaveFunction<Ix1>,
+        propagation: Propagation,
+        wave_function: WaveFunction,
         grid: Grid,
     }
 
@@ -35,7 +35,7 @@ pub mod harmonic_trap {
             let mut propagation = Propagation::default();
 
             let grid = Grid::new_linear_continuos("space", -4.0, 4.0, 256, 0);
-            let mut wave_function_array = Array1::<Complex64>::zeros(256);
+            let mut wave_function_array = ArrayD::<Complex64>::zeros(IxDyn(&[256]));
             for (i, x) in wave_function_array.iter_mut().enumerate() {
                 *x = gaussian_distribution(grid.nodes[i], 2.0, 0.2, 0.0);
             }
@@ -69,17 +69,15 @@ pub mod harmonic_trap {
             .unwrap();
 
             let potential_propagator = one_dim_into_propagator(
-                &wave_function,
                 potential,
                 &grid,
                 &time_grid,
                 TimeStep::Half,
             );
 
-            let fft_transform = FFTTransformation::new(&wave_function, &grid, "momentum");
+            let fft_transform = FFTTransformation::new(&grid, "momentum");
             let kinetic_hamiltonian = kinetic_hamiltonian(&grid, &collision_params);
             let kinetic_propagator = one_dim_into_propagator(
-                &wave_function,
                 kinetic_hamiltonian,
                 &grid,
                 &time_grid,
@@ -92,13 +90,12 @@ pub mod harmonic_trap {
                 &time_grid,
                 &grid,
                 50,
-                &wave_function,
             );
 
             let operation_stack = OperationStack::new()
                 .add_saver(Box::new(saver), Apply::FirstHalf)
                 .add_control(
-                    Box::new(LeakControl::new(&wave_function)),
+                    Box::new(LeakControl::new()),
                     Apply::FirstHalf | Apply::SecondHalf
                 )
                 .add_propagator(Box::new(potential_propagator))

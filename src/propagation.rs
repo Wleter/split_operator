@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use ndarray::Dimension;
 
 use crate::{
     control::{Apply, Control},
@@ -10,11 +9,11 @@ use crate::{
 };
 
 /// Enum of all operations that can be performed during step in propagation.
-enum Operations<N: Dimension> {
-    Propagator(RefCell<Box<dyn Propagator<N>>>),
-    Transformation(RefCell<Box<dyn Transformation<N>>>, Order),
-    Saver(RefCell<Box<dyn Saver<N>>>, Apply),
-    Control(RefCell<Box<dyn Control<N>>>, Apply),
+enum Operations {
+    Propagator(RefCell<Box<dyn Propagator>>),
+    Transformation(RefCell<Box<dyn Transformation>>, Order),
+    Saver(RefCell<Box<dyn Saver>>, Apply),
+    Control(RefCell<Box<dyn Control>>, Apply),
 }
 
 /// Operation stack defining split operator propagation step
@@ -24,11 +23,11 @@ enum Operations<N: Dimension> {
 /// 3. Saver - saves states of `wave_function` during propagation and implement [`Saver<N>`].
 /// 4. Control - other operations that control `wave_function` during propagation and implement [`Control<N>`].
 #[derive(Default)]
-pub struct OperationStack<N: Dimension> {
-    stack: Vec<Operations<N>>,
+pub struct OperationStack {
+    stack: Vec<Operations>,
 }
 
-impl<'a, N: Dimension> OperationStack<N> {
+impl OperationStack {
     pub fn new() -> Self {
         Self {
             stack: Vec::new(),
@@ -41,21 +40,21 @@ impl<'a, N: Dimension> OperationStack<N> {
     }
 
     /// Appends `Propagator<N>` to the end of the operations.
-    pub fn add_propagator(mut self, propagator: Box<dyn Propagator<N>>) -> Self {
+    pub fn add_propagator(mut self, propagator: Box<dyn Propagator>) -> Self {
         self.stack.push(Operations::Propagator(RefCell::new(propagator)));
         self
     }
 
     /// Appends `Diagonalization<N>` to the end of the operations.
     /// `order` is used to define the order of the transformations performed.
-    pub fn add_transformation(mut self, transformation: Box<dyn Transformation<N>>, order: Order) -> Self {
+    pub fn add_transformation(mut self, transformation: Box<dyn Transformation>, order: Order) -> Self {
         self.stack.push(Operations::Transformation(RefCell::new(transformation), order));
         self
     }
 
     /// Appends `Saver<N>` to the end of the operations. 
     /// `apply` is used to define when `Saver<N>` should be applied.
-    pub fn add_saver(mut self, saver: Box<dyn Saver<N>>, apply: Apply) -> Self {
+    pub fn add_saver(mut self, saver: Box<dyn Saver>, apply: Apply) -> Self {
         assert!(apply != Apply::FirstHalf & Apply::SecondHalf);
 
         self.stack.push(Operations::Saver(RefCell::new(saver), apply));
@@ -63,7 +62,7 @@ impl<'a, N: Dimension> OperationStack<N> {
     }
 
     /// Appends `Control<N>` to the end of the operations. `apply` is used to define when `Control<N>` should be applied.
-    pub fn add_control(mut self, control: Box<dyn Control<N>>, apply: Apply) -> Self {
+    pub fn add_control(mut self, control: Box<dyn Control>, apply: Apply) -> Self {
         self.stack.push(Operations::Control(RefCell::new(control), apply));
         self
     }
@@ -76,15 +75,15 @@ impl<'a, N: Dimension> OperationStack<N> {
 /// With supplied [`WaveFunction<N>`] and [`TimeGrid`] using setters, propagation is performed by calling `propagate` method.
 /// For example implementation of Propagation see `NeOcs` struct and `Animation` that builds NeOcs and propagate it.
 #[derive(Default)]
-pub struct Propagation<N: Dimension> {
-    wave_function: WaveFunction<N>,
+pub struct Propagation {
+    wave_function: WaveFunction,
     time_grid: TimeGrid,
-    operation_stack: OperationStack<N>,
+    operation_stack: OperationStack,
 }
 
-impl<N: Dimension> Propagation<N> {
-    /// Creates new `Propagation<N>` with supplied `WaveFunction<N>` and `TimeGrid`.
-    pub fn new(wave_function: WaveFunction<N>, time_grid: TimeGrid, operation_stack: OperationStack<N>) -> Self {
+impl Propagation {
+    /// Creates new `Propagation` with supplied `WaveFunction<N>` and `TimeGrid`.
+    pub fn new(wave_function: WaveFunction, time_grid: TimeGrid, operation_stack: OperationStack) -> Self {
         Propagation {
             wave_function,
             time_grid,
@@ -92,8 +91,8 @@ impl<N: Dimension> Propagation<N> {
         }
     }
 
-    /// Sets new `WaveFunction<N>` to be used in propagation.
-    pub fn set_wave_function(&mut self, wave_function: WaveFunction<N>) {
+    /// Sets new `WaveFunction` to be used in propagation.
+    pub fn set_wave_function(&mut self, wave_function: WaveFunction) {
         self.wave_function = wave_function;
     }
 
@@ -103,7 +102,7 @@ impl<N: Dimension> Propagation<N> {
     }
 
     /// Sets new `OperationStack` defining operations during propagation.
-    pub fn set_operation_stack(&mut self, operation_stack: OperationStack<N>) {
+    pub fn set_operation_stack(&mut self, operation_stack: OperationStack) {
         self.operation_stack = operation_stack;
     }
 
@@ -113,7 +112,7 @@ impl<N: Dimension> Propagation<N> {
     }
 
     /// Returns reference to `WaveFunction` used in propagation.
-    pub fn wave_function(&self) -> &WaveFunction<N> {
+    pub fn wave_function(&self) -> &WaveFunction {
         &self.wave_function
     }
 

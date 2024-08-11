@@ -37,10 +37,10 @@ mod fft_tests {
                 Complex64::new(15.0, 0.0),
                 Complex64::new(16.0, 0.0),
             ],
-        ]);
+        ]).into_dyn();
 
         let mut wf = WaveFunction::new(wf_array.clone(), vec![grid1.clone(), grid2.clone()]);
-        let mut fft_diag = FFTTransformation::new(&wf, &grid1, "a_fft");
+        let mut fft_diag = FFTTransformation::new(&grid1, "a_fft");
 
         fft_diag.transform(&mut wf);
         let wf_array_transformed = wf.array.clone();
@@ -71,7 +71,7 @@ mod fft_tests {
                 Complex64::new(-4.0, -4.0),
                 Complex64::new(-4.0, -4.0),
             ],
-        ]);
+        ]).into_dyn();
 
         assert_eq!(wf_array, wf.array);
         assert_eq!(transformed_array, wf_array_transformed)
@@ -106,10 +106,10 @@ mod fft_tests {
                 Complex64::new(15.0, 0.0),
                 Complex64::new(16.0, 0.0),
             ],
-        ]);
+        ]).into_dyn();
 
         let mut wf = WaveFunction::new(wf_array, vec![grid1.clone(), grid2.clone()]);
-        let mut fft_diag = FFTTransformation::new(&wf, &grid1, "a_fft");
+        let mut fft_diag = FFTTransformation::new(&grid1, "a_fft");
 
         let norm1 = wf.norm();
         fft_diag.transform(&mut wf);

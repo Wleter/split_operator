@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use ndarray::{Array1, Dimension};
+use ndarray::Array1;
 use num::complex::Complex64;
 
 use crate::{
@@ -33,19 +33,14 @@ pub fn dumping_end(mask_width: f64, mask_end: f64, grid: &Grid) -> Array1<Comple
 }
 
 #[derive(Clone)]
-pub struct BorderDumping<N: Dimension> {
-    operator: OneDimPropagator<N>,
+pub struct BorderDumping {
+    operator: OneDimPropagator,
     loss_checked: Option<LossChecker>,
 }
 
-impl<N: Dimension> BorderDumping<N> {
-    pub fn new(
-        mask: Array1<Complex64>,
-        _example_wave_function: &WaveFunction<N>,
-        grid: &Grid,
-    ) -> Self {
-        let mut operator =
-            OneDimPropagator::new(_example_wave_function, mask.len(), grid.dimension_no);
+impl BorderDumping {
+    pub fn new(mask: Array1<Complex64>, grid: &Grid) -> Self {
+        let mut operator = OneDimPropagator::new(mask.len(), grid.dimension_no);
         operator.set_operator(mask);
 
         BorderDumping {
@@ -59,12 +54,12 @@ impl<N: Dimension> BorderDumping<N> {
     }
 }
 
-impl<N: Dimension> Control<N> for BorderDumping<N> {
+impl Control for BorderDumping {
     fn name(&self) -> &str {
         "BorderDumping"
     }
 
-    fn first_half(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn first_half(&mut self, wave_function: &mut WaveFunction) {
         if let Some(loss_checker) = &mut self.loss_checked {
             loss_checker.check_before(wave_function);
         }
@@ -76,7 +71,7 @@ impl<N: Dimension> Control<N> for BorderDumping<N> {
         }
     }
 
-    fn second_half(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn second_half(&mut self, wave_function: &mut WaveFunction) {
         if let Some(loss_checker) = &mut self.loss_checked {
             loss_checker.check_before(wave_function);
         }

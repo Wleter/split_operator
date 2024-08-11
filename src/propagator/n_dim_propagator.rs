@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-
-use ndarray::{Array, Dimension};
+use ndarray::{ArrayD, IxDyn};
 use num::complex::Complex64;
 
 use crate::{loss_checker::LossChecker, wave_function::WaveFunction};
@@ -8,34 +6,32 @@ use crate::{loss_checker::LossChecker, wave_function::WaveFunction};
 use super::Propagator;
 
 #[derive(Clone)]
-pub struct NDimPropagator<N: Dimension> {
-    operator: Array<Complex64, N>,
-    phantom: PhantomData<N>,
+pub struct NDimPropagator {
+    operator: ArrayD<Complex64>,
     loss_checked: Option<LossChecker>,
 }
 
-impl<N: Dimension> NDimPropagator<N> {
-    pub fn new(example_wave_function: &WaveFunction<N>) -> NDimPropagator<N> {
+impl NDimPropagator {
+    pub fn new() -> NDimPropagator {
         NDimPropagator {
-            operator: Array::<Complex64, N>::zeros(example_wave_function.array.raw_dim()),
-            phantom: PhantomData,
+            operator: ArrayD::zeros(IxDyn(&[1])),
             loss_checked: None,
         }
     }
 
-    pub fn set_operator(&mut self, operator: Array<Complex64, N>) {
+    pub fn set_operator(&mut self, operator: ArrayD<Complex64>) {
         assert!(operator.shape() == self.operator.shape());
 
         self.operator = operator;
     }
 
-    pub fn add_operator(&mut self, operator: Array<Complex64, N>) {
+    pub fn add_operator(&mut self, operator: ArrayD<Complex64>) {
         assert!(operator.shape() == self.operator.shape());
 
         self.operator *= &operator;
     }
 
-    fn apply_unchecked(&self, wave_function: &mut WaveFunction<N>) {
+    fn apply_unchecked(&self, wave_function: &mut WaveFunction) {
         wave_function.change_observer.possible_norm_change = true;
 
         wave_function.array *= &self.operator;
@@ -46,8 +42,8 @@ impl<N: Dimension> NDimPropagator<N> {
     }
 }
 
-impl<N: Dimension> Propagator<N> for NDimPropagator<N> {
-    fn apply(&mut self, wave_function: &mut WaveFunction<N>) {
+impl Propagator for NDimPropagator {
+    fn apply(&mut self, wave_function: &mut WaveFunction) {
         if let Some(loss_checker) = &mut self.loss_checked {
             loss_checker.check_before(wave_function);
         }

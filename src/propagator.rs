@@ -5,12 +5,10 @@ pub mod n_dim_propagator;
 pub mod one_dim_propagator;
 pub mod propagator_factory;
 
-use ndarray::Dimension;
-
 use crate::{loss_checker::LossChecker, wave_function::WaveFunction};
 
-pub trait Propagator<N: Dimension> {
-    fn apply(&mut self, wave_function: &mut WaveFunction<N>);
+pub trait Propagator {
+    fn apply(&mut self, wave_function: &mut WaveFunction);
 
     fn loss(&self) -> &Option<LossChecker>;
 

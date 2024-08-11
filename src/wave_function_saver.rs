@@ -1,13 +1,10 @@
-use std::marker::PhantomData;
-
-use ndarray::{s, Array, Array1, Array2, Array3, Dimension};
+use ndarray::{s, Array, Array1, Array2, Array3};
 use ndarray_npy::write_npy;
 
 use crate::{grid::Grid, saver::Saver, time_grid::TimeGrid, wave_function::WaveFunction};
 
 /// Saves density of a wave function that is in 2d space during propagation.
-#[derive(Clone)]
-pub struct WaveFunctionSaver<N: Dimension> {
+pub struct WaveFunctionSaver {
     path: String,
     name: String,
     current_frame: usize,
@@ -16,10 +13,9 @@ pub struct WaveFunctionSaver<N: Dimension> {
     x_grid: Grid,
     y_grid: Grid,
     data_array: Array3<f64>,
-    wf: PhantomData<N>,
 }
 
-impl<N: Dimension> WaveFunctionSaver<N> {
+impl WaveFunctionSaver {
     /// Creates new `WaveFunctionSaver` with given path, name, time grid, x grid, y grid, frames number and example wave function.
     pub fn new(
         path: String,
@@ -28,8 +24,7 @@ impl<N: Dimension> WaveFunctionSaver<N> {
         x_grid: &Grid,
         y_grid: &Grid,
         frames_no: usize,
-        _example_wave_function: &WaveFunction<N>,
-    ) -> WaveFunctionSaver<N> {
+    ) -> WaveFunctionSaver {
         WaveFunctionSaver {
             path,
             name,
@@ -39,13 +34,12 @@ impl<N: Dimension> WaveFunctionSaver<N> {
             x_grid: x_grid.clone(),
             y_grid: y_grid.clone(),
             data_array: Array::zeros((x_grid.nodes_no, y_grid.nodes_no, frames_no)),
-            wf: PhantomData,
         }
     }
 }
 
-impl<N: Dimension> Saver<N> for WaveFunctionSaver<N> {
-    fn monitor(&mut self, wave_function: &mut WaveFunction<N>) {
+impl Saver for WaveFunctionSaver {
+    fn monitor(&mut self, wave_function: &mut WaveFunction) {
         if wave_function.array.ndim() != 2 {
             panic!("Wave function must be 2d for now");
         }
@@ -96,8 +90,7 @@ impl<N: Dimension> Saver<N> for WaveFunctionSaver<N> {
 }
 
 /// Saves density of a wave function on given dimension during propagation.
-#[derive(Clone)]
-pub struct StateSaver<N: Dimension> {
+pub struct StateSaver {
     path: String,
     name: String,
     current_frame: usize,
@@ -105,10 +98,9 @@ pub struct StateSaver<N: Dimension> {
     time_grid: TimeGrid,
     state_grid: Grid,
     data_array: Array2<f64>,
-    wf: PhantomData<N>,
 }
 
-impl<N: Dimension> StateSaver<N> {
+impl StateSaver {
     /// Creates new `StateSaver` with given path, name, time grid, state grid, frames number and example wave function.
     pub fn new(
         path: String,
@@ -116,8 +108,7 @@ impl<N: Dimension> StateSaver<N> {
         time_grid: &TimeGrid,
         state_grid: &Grid,
         frames_no: usize,
-        _example_wave_function: &WaveFunction<N>,
-    ) -> StateSaver<N> {
+    ) -> StateSaver {
         StateSaver {
             path,
             name,
@@ -126,13 +117,12 @@ impl<N: Dimension> StateSaver<N> {
             time_grid: time_grid.clone(),
             state_grid: state_grid.clone(),
             data_array: Array::zeros((state_grid.nodes_no, frames_no)),
-            wf: PhantomData,
         }
     }
 }
 
-impl<N: Dimension> Saver<N> for StateSaver<N> {
-    fn monitor(&mut self, wave_function: &mut WaveFunction<N>) {
+impl Saver for StateSaver {
+    fn monitor(&mut self, wave_function: &mut WaveFunction) {
         let frequency = self.time_grid.step_no / self.frames_no;
 
         if self.current_frame % frequency == 0 && self.current_frame / frequency < self.frames_no {

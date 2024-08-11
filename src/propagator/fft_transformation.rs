@@ -1,15 +1,15 @@
-use std::{f64::consts::PI, marker::PhantomData, sync::Arc};
+use std::{f64::consts::PI, sync::Arc};
 
 use crate::{grid::Grid, wave_function::WaveFunction};
 
 use super::transformation::Transformation;
-use ndarray::{Axis, Dimension, Zip};
+use ndarray::{Axis, Zip};
 use num::complex::Complex64;
 use rustfft::{Fft, FftPlanner};
 
 /// Diagonalization to operator eigenspace using Fourier transformation.
 #[derive(Clone)]
-pub struct FFTTransformation<N: Dimension> {
+pub struct FFTTransformation {
     dimension_no: usize,
     dimension_size: usize,
 
@@ -17,17 +17,11 @@ pub struct FFTTransformation<N: Dimension> {
     ifft: Box<Arc<dyn Fft<f64>>>,
 
     pub grid_transformation: Grid,
-
-    phantom: PhantomData<N>,
 }
 
-impl<N: Dimension> FFTTransformation<N> {
+impl FFTTransformation {
     /// Creates new [`FFTDiagonalization`] along given grid that transforms this grid into new grid with name `transformed_grid_name`.
-    pub fn new(
-        _example_wave_function: &WaveFunction<N>,
-        grid: &Grid,
-        transformed_grid_name: &str,
-    ) -> FFTTransformation<N> {
+    pub fn new(grid: &Grid, transformed_grid_name: &str) -> Self {
         let fft = FftPlanner::new().plan_fft_forward(grid.nodes_no);
         let ifft = FftPlanner::new().plan_fft_inverse(grid.nodes_no);
 
@@ -50,14 +44,13 @@ impl<N: Dimension> FFTTransformation<N> {
             fft: Box::new(fft),
             ifft: Box::new(ifft),
             grid_transformation: grid,
-            phantom: PhantomData,
         }
     }
 }
 
-impl<N: Dimension> Transformation<N> for FFTTransformation<N> {
+impl Transformation for FFTTransformation {
     #[inline(always)]
-    fn transform(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn transform(&mut self, wave_function: &mut WaveFunction) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 
@@ -76,7 +69,7 @@ impl<N: Dimension> Transformation<N> for FFTTransformation<N> {
     }
 
     #[inline(always)]
-    fn inverse_transform(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn inverse_transform(&mut self, wave_function: &mut WaveFunction) {
         wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
         wave_function.change_observer.possible_norm_change = true;
 

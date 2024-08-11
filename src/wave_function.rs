@@ -1,4 +1,4 @@
-use ndarray::{Array, Array1, Axis, Dimension, IxDyn, Zip};
+use ndarray::{Array, Array1, ArrayD, Axis, IxDyn, Zip};
 use num::complex::Complex64;
 
 use crate::change_observer::ChangeObserver;
@@ -8,21 +8,20 @@ use crate::grid::Grid;
 /// It contains the wave function array in the representation of grids.
 /// `change_observer` is used to observe possible norm and grid changes during the propagation.
 #[derive(Clone, Default)]
-pub struct WaveFunction<N: Dimension> {
-    pub array: Array<Complex64, N>,
+pub struct WaveFunction {
+    pub array: ArrayD<Complex64>,
     pub grids: Vec<Grid>,
 
     pub change_observer: ChangeObserver,
 
     /// Array of weights for calculating wave function norm.
-    weight_amplitude_array: Array<Complex64, N>,
+    weight_amplitude_array: ArrayD<Complex64>,
 }
 
-impl<N: Dimension> WaveFunction<N> {
+impl WaveFunction {
     /// Creates new wave function from wave function array and grids.
-    pub fn new(wave_function_array: Array<Complex64, N>, grids: Vec<Grid>) -> WaveFunction<N> {
-        let mut weight_amplitude_array: Array<Complex64, N> =
-            Array::ones(wave_function_array.dim());
+    pub fn new(wave_function_array: ArrayD<Complex64>, grids: Vec<Grid>) -> WaveFunction {
+        let mut weight_amplitude_array: ArrayD<Complex64> = Array::ones(wave_function_array.dim());
 
         for axis in 0..wave_function_array.ndim() {
             weight_amplitude_array
@@ -110,7 +109,7 @@ impl<N: Dimension> WaveFunction<N> {
     }
 
     /// Returns the density of the wave function on actual `grids`.
-    pub fn density(&mut self) -> Array<f64, N> {
+    pub fn density(&mut self) -> ArrayD<f64> {
         let density_vec: Vec<f64> = self.array.iter().map(|x| x.norm_sqr()).collect();
 
         let density = Array::from_shape_vec(self.array.raw_dim(), density_vec).unwrap();
@@ -125,16 +124,13 @@ impl<N: Dimension> WaveFunction<N> {
             self.change_observer.observe_grid(&self.grids);
         }
 
-        let density = self.density();
+        let mut density = self.density();
 
         if density.ndim() == 1 {
             return density.into_dimensionality().unwrap();
         }
 
-        density
-            .into_dimensionality::<IxDyn>()
-            .unwrap()
-            .axis_iter_mut(Axis(axis))
+        density.axis_iter_mut(Axis(axis))
             .zip(
                 self.weight_amplitude_array
                     .view()

@@ -1,24 +1,19 @@
-use std::marker::PhantomData;
-
-use ndarray::Dimension;
 
 use crate::{control::Control, loss_checker::LossChecker, wave_function::WaveFunction};
 
 /// Controls the norm of the wave function during propagation.
 /// Used when transformations of the wave function loss some of its norm due to numerical stability.
 #[derive(Clone)]
-pub struct LeakControl<N: Dimension> {
+pub struct LeakControl {
     norm: f64,
-    phantom: PhantomData<N>,
     loss_checked: Option<LossChecker>,
 }
 
-impl<N: Dimension> LeakControl<N> {
+impl LeakControl {
     /// Creates new `LeakControl` with given example wave function.
-    pub fn new(_example_wave_function: &WaveFunction<N>) -> Self {
+    pub fn new() -> Self {
         LeakControl {
             norm: 0.0,
-            phantom: PhantomData,
             loss_checked: None,
         }
     }
@@ -28,12 +23,12 @@ impl<N: Dimension> LeakControl<N> {
     }
 }
 
-impl<N: Dimension> Control<N> for LeakControl<N> {
+impl Control for LeakControl {
     fn name(&self) -> &str {
         "LeakControl"
     }
 
-    fn first_half(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn first_half(&mut self, wave_function: &mut WaveFunction) {
         self.norm = wave_function.norm();
 
         if let Some(loss_checker) = &mut self.loss_checked {
@@ -41,7 +36,7 @@ impl<N: Dimension> Control<N> for LeakControl<N> {
         }
     }
 
-    fn second_half(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn second_half(&mut self, wave_function: &mut WaveFunction) {
         if let Some(loss_checker) = &mut self.loss_checked {
             loss_checker.check_after(wave_function);
         }

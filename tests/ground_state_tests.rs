@@ -4,7 +4,7 @@ pub mod harmonic_trap;
 mod ground_state_tests {
     use std::time::Instant;
 
-    use ndarray::{Array1, Ix1};
+    use ndarray::{Array1, ArrayD, IxDyn};
     use num::complex::Complex64;
     use quantum::{
         particle_factory::create_atom,
@@ -42,14 +42,14 @@ mod ground_state_tests {
 
     #[allow(dead_code)]
     struct OneChannelPropagation {
-        propagation: Propagation<Ix1>,
-        wave_function: WaveFunction<Ix1>,
+        propagation: Propagation,
+        wave_function: WaveFunction,
         grid: Grid,
     }
 
     impl OneChannelPropagation {
         pub fn new() -> Self {
-            let mut propagation = Propagation::<Ix1>::default();
+            let mut propagation = Propagation::default();
 
             let x_start = 8.0;
             let x_end = 20.0;
@@ -66,7 +66,7 @@ mod ground_state_tests {
                 * collision_params.red_mass()
                 * collision_params.internals.get_value("energy"))
             .sqrt();
-            let mut wave_function_array = Array1::<Complex64>::zeros(x_no);
+            let mut wave_function_array = ArrayD::<Complex64>::zeros(IxDyn(&[x_no]));
             for (i, x) in grid.nodes.iter().enumerate() {
                 wave_function_array[i] = gaussian_distribution(*x, 14.0, 2.0, momentum);
             }
@@ -96,7 +96,6 @@ mod ground_state_tests {
             .unwrap();
 
             let potential_propagator = one_dim_into_propagator(
-                &wave_function,
                 potential_array,
                 &grid,
                 &time_grid,
@@ -105,13 +104,12 @@ mod ground_state_tests {
 
             let kinetic_array = kinetic_hamiltonian(&grid, &collision_params);
             let kinetic_propagator = one_dim_into_propagator(
-                &wave_function,
                 kinetic_array,
                 &grid,
                 &time_grid,
                 TimeStep::Full,
             );
-            let fft_transform = FFTTransformation::new(&wave_function, &grid, "momentum");
+            let fft_transform = FFTTransformation::new(&grid, "momentum");
 
             let name = "lj_ground_space".to_string();
             let wave_function_saver = StateSaver::new(
@@ -120,10 +118,9 @@ mod ground_state_tests {
                 &time_grid,
                 &grid,
                 120,
-                &wave_function,
             );
 
-            let mut leak_control = LeakControl::new(&wave_function);
+            let mut leak_control = LeakControl::new();
             leak_control.add_loss_checker(LossChecker::new("leak control"));
 
             let operation_stack = OperationStack::new()

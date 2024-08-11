@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-
-use ndarray::{Array1, Axis, Dimension};
+use ndarray::{Array1, Axis};
 use num::complex::Complex64;
 use rayon::prelude::*;
 
@@ -9,23 +7,17 @@ use crate::{loss_checker::LossChecker, wave_function::WaveFunction};
 use super::Propagator;
 
 #[derive(Clone)]
-pub struct OneDimPropagator<N: Dimension> {
+pub struct OneDimPropagator {
     dimension_no: usize,
     operator: Array1<Complex64>,
-    phantom: PhantomData<N>,
     loss_checked: Option<LossChecker>,
 }
 
-impl<N: Dimension> OneDimPropagator<N> {
-    pub fn new(
-        _example_wave_function: &WaveFunction<N>,
-        shape: usize,
-        dimension_no: usize,
-    ) -> OneDimPropagator<N> {
+impl OneDimPropagator {
+    pub fn new(shape: usize, dimension_no: usize) -> OneDimPropagator {
         OneDimPropagator {
             dimension_no,
             operator: Array1::<Complex64>::zeros(shape),
-            phantom: PhantomData,
             loss_checked: None,
         }
     }
@@ -42,7 +34,7 @@ impl<N: Dimension> OneDimPropagator<N> {
         self.operator *= &operator;
     }
 
-    fn apply_unchecked(&self, wave_function: &mut WaveFunction<N>) {
+    fn apply_unchecked(&self, wave_function: &mut WaveFunction) {
         wave_function.change_observer.possible_norm_change = true;
 
         wave_function
@@ -58,9 +50,9 @@ impl<N: Dimension> OneDimPropagator<N> {
     }
 }
 
-impl<N: Dimension> Propagator<N> for OneDimPropagator<N> {
+impl Propagator for OneDimPropagator {
     #[inline(always)]
-    fn apply(&mut self, wave_function: &mut WaveFunction<N>) {
+    fn apply(&mut self, wave_function: &mut WaveFunction) {
         if let Some(loss_checker) = &mut self.loss_checked {
             loss_checker.check_before(wave_function);
         }

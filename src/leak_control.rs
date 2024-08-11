@@ -10,7 +10,7 @@ pub struct LeakControl {
 }
 
 impl LeakControl {
-    /// Creates new `LeakControl` with given example wave function.
+    /// Creates new `LeakControl`.
     pub fn new() -> Self {
         LeakControl {
             norm: 0.0,

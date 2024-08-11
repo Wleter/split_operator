@@ -16,7 +16,7 @@ pub struct WaveFunctionSaver {
 }
 
 impl WaveFunctionSaver {
-    /// Creates new `WaveFunctionSaver` with given path, name, time grid, x grid, y grid, frames number and example wave function.
+    /// Creates new `WaveFunctionSaver` with given path, name, time grid, x grid, y grid, frames number.
     pub fn new(
         path: String,
         name: String,
@@ -101,7 +101,7 @@ pub struct StateSaver {
 }
 
 impl StateSaver {
-    /// Creates new `StateSaver` with given path, name, time grid, state grid, frames number and example wave function.
+    /// Creates new `StateSaver` with given path, name, time grid, state grid, frames number.
     pub fn new(
         path: String,
         name: String,

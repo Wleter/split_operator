@@ -18,10 +18,10 @@ enum Operations {
 
 /// Operation stack defining split operator propagation step
 /// There are 4 types of operations:
-/// 1. Propagator - operator that implement [`Propagation<N>`].
-/// 2. Transformation - operator that transform basis of `wave_function` and implement [`Diagonalization<N>`].
-/// 3. Saver - saves states of `wave_function` during propagation and implement [`Saver<N>`].
-/// 4. Control - other operations that control `wave_function` during propagation and implement [`Control<N>`].
+/// 1. Propagator - operator that implement [`Propagation`].
+/// 2. Transformation - operator that transform basis of `wave_function` and implement [`Diagonalization`].
+/// 3. Saver - saves states of `wave_function` during propagation and implement [`Saver`].
+/// 4. Control - other operations that control `wave_function` during propagation and implement [`Control`].
 #[derive(Default)]
 pub struct OperationStack {
     stack: Vec<Operations>,
@@ -39,21 +39,21 @@ impl OperationStack {
         self.stack.len()
     }
 
-    /// Appends `Propagator<N>` to the end of the operations.
+    /// Appends `Propagator` to the end of the operations.
     pub fn add_propagator(mut self, propagator: Box<dyn Propagator>) -> Self {
         self.stack.push(Operations::Propagator(RefCell::new(propagator)));
         self
     }
 
-    /// Appends `Diagonalization<N>` to the end of the operations.
+    /// Appends `Diagonalization` to the end of the operations.
     /// `order` is used to define the order of the transformations performed.
     pub fn add_transformation(mut self, transformation: Box<dyn Transformation>, order: Order) -> Self {
         self.stack.push(Operations::Transformation(RefCell::new(transformation), order));
         self
     }
 
-    /// Appends `Saver<N>` to the end of the operations. 
-    /// `apply` is used to define when `Saver<N>` should be applied.
+    /// Appends `Saver` to the end of the operations. 
+    /// `apply` is used to define when `Saver` should be applied.
     pub fn add_saver(mut self, saver: Box<dyn Saver>, apply: Apply) -> Self {
         assert!(apply != Apply::FirstHalf & Apply::SecondHalf);
 
@@ -61,7 +61,7 @@ impl OperationStack {
         self
     }
 
-    /// Appends `Control<N>` to the end of the operations. `apply` is used to define when `Control<N>` should be applied.
+    /// Appends `Control` to the end of the operations. `apply` is used to define when `Control` should be applied.
     pub fn add_control(mut self, control: Box<dyn Control>, apply: Apply) -> Self {
         self.stack.push(Operations::Control(RefCell::new(control), apply));
         self
@@ -72,7 +72,7 @@ impl OperationStack {
 /// Building the split-operator method is done by appending operations in the order they should be performed,
 /// last appended operation should be the central one with full step.
 ///
-/// With supplied [`WaveFunction<N>`] and [`TimeGrid`] using setters, propagation is performed by calling `propagate` method.
+/// With supplied [`WaveFunction`] and [`TimeGrid`] using setters, propagation is performed by calling `propagate` method.
 /// For example implementation of Propagation see `NeOcs` struct and `Animation` that builds NeOcs and propagate it.
 #[derive(Default)]
 pub struct Propagation {
@@ -82,7 +82,7 @@ pub struct Propagation {
 }
 
 impl Propagation {
-    /// Creates new `Propagation` with supplied `WaveFunction<N>` and `TimeGrid`.
+    /// Creates new `Propagation` with supplied `WaveFunction` and `TimeGrid`.
     pub fn new(wave_function: WaveFunction, time_grid: TimeGrid, operation_stack: OperationStack) -> Self {
         Propagation {
             wave_function,
@@ -116,7 +116,7 @@ impl Propagation {
         &self.wave_function
     }
 
-    /// Resets all `Saver<N>` states in operations vector.
+    /// Resets all `Saver` states in operations vector.
     pub fn reset_savers_state(&mut self) {
         for op in &self.operation_stack.stack {
             if let Operations::Saver(saver, _) = op {
@@ -125,7 +125,7 @@ impl Propagation {
         }
     }
 
-    /// Resets all losses that were observed by `Propagator<N>` with enabled loss checking.
+    /// Resets all losses that were observed by `Propagator` with enabled loss checking.
     pub fn reset_losses(&mut self) {
         for op in &mut self.operation_stack.stack {
             if let Operations::Propagator(propagator) = op {
@@ -192,7 +192,7 @@ impl Propagation {
         }
     }
 
-    /// Prints losses that were observed by `Propagator<N>` with enabled loss checking.
+    /// Prints losses that were observed by `Propagator` with enabled loss checking.
     pub fn print_losses(&mut self) {
         for op in &mut self.operation_stack.stack {
             match op {
@@ -215,7 +215,7 @@ impl Propagation {
         }
     }
 
-    /// Returns losses that were observed by `Propagator<N>` with enabled loss checking.
+    /// Returns losses that were observed by `Propagator` with enabled loss checking.
     pub fn get_losses(&mut self) -> Vec<f64> {
         let mut losses = Vec::new();
         for op in &mut self.operation_stack.stack {
@@ -233,7 +233,7 @@ impl Propagation {
         losses
     }
 
-    /// Saves states of `wave_function` during propagation observed by all `Saver<N>`.
+    /// Saves states of `wave_function` during propagation observed by all `Saver`.
     pub fn savers_save(&mut self) {
         for op in &mut self.operation_stack.stack {
             match op {

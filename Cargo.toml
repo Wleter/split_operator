@@ -10,7 +10,7 @@ quantum = { git = "https://github.com/Wleter/quantum" }
 num = "*"
 rustfft = "*"
 criterion = "*"
-ndarray-npy = "*"
+ndarray-npy = "0.8.1"
 gauss-quad = "0.1.9"
 rayon = "*"
 ndarray = { version = "*", features = ["rayon", "matrixmultiply-threading"] }

@@ -13,7 +13,7 @@ criterion = "*"
 ndarray-npy = "0.8.1"
 gauss-quad = "0.1.9"
 rayon = "*"
-ndarray = { version = "*", features = ["rayon", "matrixmultiply-threading"] }
+ndarray = { version = "0.15.6", features = ["rayon", "matrixmultiply-threading"] }
 enum-flags = "*"
 
 [profile.test]

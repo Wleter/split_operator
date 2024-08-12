@@ -11,7 +11,7 @@ num = "*"
 rustfft = "*"
 criterion = "*"
 ndarray-npy = "*"
-gauss-quad = "*"
+gauss-quad = "0.1.9"
 rayon = "*"
 ndarray = { version = "*", features = ["rayon", "matrixmultiply-threading"] }
 enum-flags = "*"

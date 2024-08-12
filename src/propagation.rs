@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::sync::Mutex;
 
 use crate::{
     control::{Apply, Control},
@@ -10,10 +10,10 @@ use crate::{
 
 /// Enum of all operations that can be performed during step in propagation.
 enum Operations {
-    Propagator(RefCell<Box<dyn Propagator>>),
-    Transformation(RefCell<Box<dyn Transformation>>, Order),
-    Saver(RefCell<Box<dyn Saver>>, Apply),
-    Control(RefCell<Box<dyn Control>>, Apply),
+    Propagator(Mutex<Box<dyn Propagator + Send>>),
+    Transformation(Mutex<Box<dyn Transformation + Send>>, Order),
+    Saver(Mutex<Box<dyn Saver + Send>>, Apply),
+    Control(Mutex<Box<dyn Control + Send>>, Apply),
 }
 
 /// Operation stack defining split operator propagation step
@@ -40,30 +40,30 @@ impl OperationStack {
     }
 
     /// Appends `Propagator` to the end of the operations.
-    pub fn add_propagator(mut self, propagator: Box<dyn Propagator>) -> Self {
-        self.stack.push(Operations::Propagator(RefCell::new(propagator)));
+    pub fn add_propagator(mut self, propagator: Box<dyn Propagator + Send>) -> Self {
+        self.stack.push(Operations::Propagator(Mutex::new(propagator)));
         self
     }
 
     /// Appends `Diagonalization` to the end of the operations.
     /// `order` is used to define the order of the transformations performed.
-    pub fn add_transformation(mut self, transformation: Box<dyn Transformation>, order: Order) -> Self {
-        self.stack.push(Operations::Transformation(RefCell::new(transformation), order));
+    pub fn add_transformation(mut self, transformation: Box<dyn Transformation + Send>, order: Order) -> Self {
+        self.stack.push(Operations::Transformation(Mutex::new(transformation), order));
         self
     }
 
     /// Appends `Saver` to the end of the operations. 
     /// `apply` is used to define when `Saver` should be applied.
-    pub fn add_saver(mut self, saver: Box<dyn Saver>, apply: Apply) -> Self {
+    pub fn add_saver(mut self, saver: Box<dyn Saver + Send>, apply: Apply) -> Self {
         assert!(apply != Apply::FirstHalf & Apply::SecondHalf);
 
-        self.stack.push(Operations::Saver(RefCell::new(saver), apply));
+        self.stack.push(Operations::Saver(Mutex::new(saver), apply));
         self
     }
 
     /// Appends `Control` to the end of the operations. `apply` is used to define when `Control` should be applied.
-    pub fn add_control(mut self, control: Box<dyn Control>, apply: Apply) -> Self {
-        self.stack.push(Operations::Control(RefCell::new(control), apply));
+    pub fn add_control(mut self, control: Box<dyn Control + Send>, apply: Apply) -> Self {
+        self.stack.push(Operations::Control(Mutex::new(control), apply));
         self
     }
 }
@@ -120,7 +120,7 @@ impl Propagation {
     pub fn reset_savers_state(&mut self) {
         for op in &self.operation_stack.stack {
             if let Operations::Saver(saver, _) = op {
-                saver.borrow_mut().reset();
+                saver.lock().unwrap().reset();
             }
         }
     }
@@ -129,7 +129,7 @@ impl Propagation {
     pub fn reset_losses(&mut self) {
         for op in &mut self.operation_stack.stack {
             if let Operations::Propagator(propagator) = op {
-                propagator.borrow_mut().loss_reset();
+                propagator.lock().unwrap().loss_reset();
             }
         }
     }
@@ -139,22 +139,22 @@ impl Propagation {
         for op in &mut self.operation_stack.stack {
             match op {
                 Operations::Propagator(propagator) => {
-                    propagator.borrow_mut().apply(&mut self.wave_function);
+                    propagator.lock().unwrap().apply(&mut self.wave_function);
                 }
                 Operations::Transformation(transformation, order) => {
                     match order {
-                        Order::Normal => transformation.borrow_mut().transform(&mut self.wave_function),
-                        Order::InverseFirst => transformation.borrow_mut().inverse_transform(&mut self.wave_function),
+                        Order::Normal => transformation.lock().unwrap().transform(&mut self.wave_function),
+                        Order::InverseFirst => transformation.lock().unwrap().inverse_transform(&mut self.wave_function),
                     }
                 }
                 Operations::Saver(saver, apply) => {
                     if *apply & Apply::FirstHalf != Apply::None {
-                        saver.borrow_mut().monitor(&mut self.wave_function)
+                        saver.lock().unwrap().monitor(&mut self.wave_function)
                     };
                 }
                 Operations::Control(control, apply) => {
                     if *apply & Apply::FirstHalf != Apply::None {
-                        control.borrow_mut().first_half(&mut self.wave_function);
+                        control.lock().unwrap().first_half(&mut self.wave_function);
                     }
                 }
             }
@@ -163,22 +163,22 @@ impl Propagation {
         for op in &mut self.operation_stack.stack.iter().rev().skip(1) {
             match op {
                 Operations::Propagator(propagator) => {
-                    propagator.borrow_mut().apply(&mut self.wave_function);
+                    propagator.lock().unwrap().apply(&mut self.wave_function);
                 }
                 Operations::Transformation(transformation, order) => {
                     match order {
-                        Order::Normal => transformation.borrow_mut().inverse_transform(&mut self.wave_function),
-                        Order::InverseFirst => transformation.borrow_mut().transform(&mut self.wave_function),
+                        Order::Normal => transformation.lock().unwrap().inverse_transform(&mut self.wave_function),
+                        Order::InverseFirst => transformation.lock().unwrap().transform(&mut self.wave_function),
                     }
                 }
                 Operations::Saver(saver, apply) => {
                     if *apply & Apply::FirstHalf != Apply::None {
-                        saver.borrow_mut().monitor(&mut self.wave_function)
+                        saver.lock().unwrap().monitor(&mut self.wave_function)
                     };
                 }
                 Operations::Control(control, apply) => {
                     if *apply & Apply::SecondHalf != Apply::None {
-                        control.borrow_mut().second_half(&mut self.wave_function);
+                        control.lock().unwrap().second_half(&mut self.wave_function);
                     }
                 }
             }
@@ -197,14 +197,14 @@ impl Propagation {
         for op in &mut self.operation_stack.stack {
             match op {
                 Operations::Propagator(propagator) => {
-                    let borrowed = propagator.borrow();
+                    let borrowed = propagator.lock().unwrap();
                     let loss_checker = borrowed.loss();
                     if let Some(loss) = loss_checker {
                         println!("{} loss: {}", loss.name, loss.loss());
                     }
                 }
                 Operations::Control(control, _) => {
-                    let borrowed = control.borrow();
+                    let borrowed = control.lock().unwrap();
                     let loss_checker = borrowed.loss();
                     if let Some(loss) = loss_checker {
                         println!("{} loss: {}", loss.name, loss.loss());
@@ -221,7 +221,7 @@ impl Propagation {
         for op in &mut self.operation_stack.stack {
             match op {
                 Operations::Propagator(propagator) => {
-                    let borrowed = propagator.borrow();
+                    let borrowed = propagator.lock().unwrap();
                     let loss_checker = borrowed.loss();
                     if let Some(loss) = loss_checker {
                         losses.push(loss.loss());
@@ -238,7 +238,7 @@ impl Propagation {
         for op in &mut self.operation_stack.stack {
             match op {
                 Operations::Saver(saver, _) => {
-                    saver.borrow_mut().save().unwrap();
+                    saver.lock().unwrap().save().unwrap();
                 }
                 _ => {}
             }
@@ -250,10 +250,10 @@ impl Propagation {
             match &self.operation_stack.stack[0] {
                 Operations::Control(control, _) => {
                     assert!(
-                        control.borrow_mut().name() == "LeakControl",
+                        control.lock().unwrap().name() == "LeakControl",
                         "For imaginary time propagation first control must be LeakControl."
                     );
-                    let mut borrowed = control.borrow_mut();
+                    let mut borrowed = control.lock().unwrap();
                     let loss = borrowed.loss_mut();
 
                     if let Some(loss) = loss {
@@ -268,7 +268,7 @@ impl Propagation {
 
             let decay = match &self.operation_stack.stack[0] {
                 Operations::Control(control, _) => {
-                    let mut borrowed = control.borrow_mut();
+                    let mut borrowed = control.lock().unwrap();
                     let loss = borrowed.loss_mut();
 
                     if let Some(loss) = loss {

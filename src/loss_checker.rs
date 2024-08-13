@@ -5,7 +5,7 @@ use crate::{loss_saver::LossSaver, time_grid::TimeGrid, wave_function::WaveFunct
 /// It also stores the cumulative loss of norm during checks.
 #[derive(Clone)]
 pub struct LossChecker {
-    pub name: &'static str,
+    pub name: String,
     loss: f64,
     current_norm: f64,
     loss_saver: Option<LossSaver>,
@@ -13,9 +13,9 @@ pub struct LossChecker {
 
 impl LossChecker {
     /// Creates new `LossChecker` with given name.
-    pub fn new(name: &'static str) -> LossChecker {
+    pub fn new(name: &str) -> LossChecker {
         LossChecker {
-            name,
+            name: name.to_string(),
             loss: 0.0,
             current_norm: 1.0,
             loss_saver: None,
@@ -23,13 +23,13 @@ impl LossChecker {
     }
 
     pub fn new_with_saver(
-        name: &'static str,
+        name: &str,
         frames_no: usize,
         filename: String,
         time_grid: &TimeGrid,
     ) -> LossChecker {
         LossChecker {
-            name,
+            name: name.to_string(),
             loss: 0.0,
             current_norm: 1.0,
             loss_saver: Some(LossSaver::new(filename, frames_no, time_grid)),

@@ -123,12 +123,12 @@ mod ground_state_tests {
             let mut leak_control = LeakControl::new();
             leak_control.add_loss_checker(LossChecker::new("leak control"));
 
-            let operation_stack = OperationStack::new()
-                .add_control(Box::new(leak_control), Apply::FirstHalf | Apply::SecondHalf)
-                .add_saver(Box::new(wave_function_saver), Apply::FirstHalf)
-                .add_propagator(Box::new(potential_propagator))
-                .add_transformation(Box::new(fft_transform), Order::Normal)
-                .add_propagator(Box::new(kinetic_propagator));
+            let mut operation_stack = OperationStack::new();
+            operation_stack.add_control(Box::new(leak_control), Apply::FirstHalf | Apply::SecondHalf);
+            operation_stack.add_saver(Box::new(wave_function_saver), Apply::FirstHalf);
+            operation_stack.add_propagator(Box::new(potential_propagator));
+            operation_stack.add_transformation(Box::new(fft_transform), Order::Normal);
+            operation_stack.add_propagator(Box::new(kinetic_propagator));
 
             propagation.set_operation_stack(operation_stack);
 

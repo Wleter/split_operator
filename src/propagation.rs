@@ -40,31 +40,27 @@ impl OperationStack {
     }
 
     /// Appends `Propagator` to the end of the operations.
-    pub fn add_propagator(mut self, propagator: Box<dyn Propagator + Send>) -> Self {
+    pub fn add_propagator(&mut self, propagator: Box<dyn Propagator + Send>) {
         self.stack.push(Operations::Propagator(Mutex::new(propagator)));
-        self
     }
 
     /// Appends `Diagonalization` to the end of the operations.
     /// `order` is used to define the order of the transformations performed.
-    pub fn add_transformation(mut self, transformation: Box<dyn Transformation + Send>, order: Order) -> Self {
+    pub fn add_transformation(&mut self, transformation: Box<dyn Transformation + Send>, order: Order) {
         self.stack.push(Operations::Transformation(Mutex::new(transformation), order));
-        self
     }
 
     /// Appends `Saver` to the end of the operations. 
     /// `apply` is used to define when `Saver` should be applied.
-    pub fn add_saver(mut self, saver: Box<dyn Saver + Send>, apply: Apply) -> Self {
+    pub fn add_saver(&mut self, saver: Box<dyn Saver + Send>, apply: Apply) {
         assert!(apply != Apply::FirstHalf & Apply::SecondHalf);
 
         self.stack.push(Operations::Saver(Mutex::new(saver), apply));
-        self
     }
 
     /// Appends `Control` to the end of the operations. `apply` is used to define when `Control` should be applied.
-    pub fn add_control(mut self, control: Box<dyn Control + Send>, apply: Apply) -> Self {
+    pub fn add_control(&mut self, control: Box<dyn Control + Send>, apply: Apply) {
         self.stack.push(Operations::Control(Mutex::new(control), apply));
-        self
     }
 }
 

@@ -4,6 +4,7 @@ use ndarray_npy::write_npy;
 use crate::{grid::Grid, saver::Saver, time_grid::TimeGrid, wave_function::WaveFunction};
 
 /// Saves density of a wave function that is in 2d space during propagation.
+#[derive(Clone)]
 pub struct WaveFunctionSaver {
     path: String,
     name: String,
@@ -90,6 +91,7 @@ impl Saver for WaveFunctionSaver {
 }
 
 /// Saves density of a wave function on given dimension during propagation.
+#[derive(Clone)]
 pub struct StateSaver {
     path: String,
     name: String,

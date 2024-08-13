@@ -17,7 +17,7 @@ impl OneDimPropagator {
     pub fn new(shape: usize, dimension_no: usize) -> OneDimPropagator {
         OneDimPropagator {
             dimension_no,
-            operator: Array1::<Complex64>::zeros(shape),
+            operator: Array1::<Complex64>::ones(shape),
             loss_checked: None,
         }
     }

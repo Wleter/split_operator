@@ -92,15 +92,15 @@ pub mod harmonic_trap {
                 50,
             );
 
-            let operation_stack = OperationStack::new()
-                .add_saver(Box::new(saver), Apply::FirstHalf)
-                .add_control(
+            let mut operation_stack = OperationStack::new();
+            operation_stack.add_saver(Box::new(saver), Apply::FirstHalf);
+            operation_stack.add_control(
                     Box::new(LeakControl::new()),
                     Apply::FirstHalf | Apply::SecondHalf
-                )
-                .add_propagator(Box::new(potential_propagator))
-                .add_transformation(Box::new(fft_transform), Order::Normal)
-                .add_propagator(Box::new(kinetic_propagator));
+                );
+            operation_stack.add_propagator(Box::new(potential_propagator));
+            operation_stack.add_transformation(Box::new(fft_transform), Order::Normal);
+            operation_stack.add_propagator(Box::new(kinetic_propagator));
 
             propagation.set_operation_stack(operation_stack);
 

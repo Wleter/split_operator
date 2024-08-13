@@ -20,8 +20,6 @@ impl NDimPropagator {
     }
 
     pub fn set_operator(&mut self, operator: ArrayD<Complex64>) {
-        assert!(operator.shape() == self.operator.shape());
-
         self.operator = operator;
     }
 

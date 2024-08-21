@@ -14,6 +14,7 @@ pub struct WaveFunctionSaver {
     x_grid: Grid,
     y_grid: Grid,
     data_array: Array3<f64>,
+    times: Vec<f64>
 }
 
 impl WaveFunctionSaver {
@@ -35,6 +36,7 @@ impl WaveFunctionSaver {
             x_grid: x_grid.clone(),
             y_grid: y_grid.clone(),
             data_array: Array::zeros((x_grid.nodes_no, y_grid.nodes_no, frames_no)),
+            times: Vec::with_capacity(frames_no),
         }
     }
 }
@@ -57,6 +59,8 @@ impl Saver for WaveFunctionSaver {
             self.data_array
                 .slice_mut(s![.., .., self.current_frame / frequency])
                 .assign(&density2d);
+
+            self.times.push(self.time_grid.step * (self.current_frame as f64 + 1.))
         }
 
         self.current_frame += 1;
@@ -65,21 +69,27 @@ impl Saver for WaveFunctionSaver {
     fn save(&self) -> Result<(), &str> {
         let path = [self.path.clone(), self.name.clone()].join("");
 
-        let result = write_npy(path.clone() + ".npy", &self.data_array);
+        let result = write_npy(&format!("{path}.npy"), &self.data_array);
         if result.is_err() {
             return Err("Failed to save wave function");
         }
 
         let x_grid: Array1<f64> = Array::from_vec(self.x_grid.nodes.clone());
-        let result = write_npy(path.clone() + "_x_grid.npy", &x_grid);
+        let result = write_npy(&format!("{path}_x_grid.npy"), &x_grid);
         if result.is_err() {
             return Err("Failed to save r grid");
         }
 
         let y_grid: Array1<f64> = Array::from_vec(self.y_grid.nodes.clone());
-        let result = write_npy(path.clone() + "_y_grid.npy", &y_grid);
+        let result = write_npy(&format!("{path}_y_grid.npy"), &y_grid);
         if result.is_err() {
             return Err("Failed to save theta grid");
+        }
+
+        let times: Array1<f64> = Array::from_vec(self.times.clone());
+        let result = write_npy(&format!("{path}_time.npy"), &times);
+        if result.is_err() {
+            return Err("Failed to save time grid")
         }
 
         Ok(())
@@ -100,6 +110,7 @@ pub struct StateSaver {
     time_grid: TimeGrid,
     state_grid: Grid,
     data_array: Array2<f64>,
+    times: Vec<f64>
 }
 
 impl StateSaver {
@@ -119,6 +130,7 @@ impl StateSaver {
             time_grid: time_grid.clone(),
             state_grid: state_grid.clone(),
             data_array: Array::zeros((state_grid.nodes_no, frames_no)),
+            times: Vec::with_capacity(frames_no)
         }
     }
 }
@@ -133,6 +145,8 @@ impl Saver for StateSaver {
             self.data_array
                 .slice_mut(s![.., self.current_frame / frequency])
                 .assign(&state);
+
+            self.times.push(self.time_grid.step * (self.current_frame as f64 + 1.))
         }
 
         self.current_frame += 1;
@@ -141,18 +155,21 @@ impl Saver for StateSaver {
     fn save(&self) -> Result<(), &str> {
         let path = [self.path.clone(), self.name.clone()].join("");
 
-        let result = write_npy(path.clone() + ".npy", &self.data_array);
+        let result = write_npy(&format!("{path}.npy"), &self.data_array);
         if result.is_err() {
             return Err("Failed to save wave function");
         }
 
         let state_grid: Array1<f64> = Array::from_vec(self.state_grid.nodes.clone());
-        let result = write_npy(
-            path.clone() + "_" + &self.state_grid.name.clone() + "_grid.npy",
-            &state_grid,
-        );
+        let result = write_npy(&format!("{path}_{}_grid.npy", self.state_grid.name), &state_grid);
         if result.is_err() {
             return Err("Failed to save state grid");
+        }
+
+        let times: Array1<f64> = Array::from_vec(self.times.clone());
+        let result = write_npy(&format!("{path}_time.npy"), &times);
+        if result.is_err() {
+            return Err("Failed to save time grid")
         }
 
         Ok(())

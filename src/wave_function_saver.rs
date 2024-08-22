@@ -146,7 +146,7 @@ impl Saver for StateSaver {
                 .slice_mut(s![.., self.current_frame / frequency])
                 .assign(&state);
 
-            self.times.push(self.time_grid.step * (self.current_frame as f64 + 1.))
+            self.times.push(self.time_grid.step * (self.current_frame as f64 + 1.));
         }
 
         self.current_frame += 1;

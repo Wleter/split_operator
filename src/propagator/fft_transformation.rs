@@ -25,7 +25,7 @@ impl FFTTransformation {
         let fft = FftPlanner::new().plan_fft_forward(grid.nodes_no);
         let ifft = FftPlanner::new().plan_fft_inverse(grid.nodes_no);
 
-        let momentum_step = 2.0 * PI / (grid.nodes.last().unwrap() - grid.nodes.first().unwrap());
+        let momentum_step = 2.0 * PI / (grid.nodes.last().unwrap() - grid.nodes.first().unwrap()) * (1. - 1. / grid.nodes_no as f64);
         let length: i64 = grid.nodes_no as i64;
         let momenta: Vec<f64> = (0..length / 2)
             .chain(-length / 2..0)

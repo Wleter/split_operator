@@ -168,7 +168,7 @@ impl Propagation {
                     }
                 }
                 Operations::Saver(saver, apply) => {
-                    if *apply & Apply::FirstHalf != Apply::None {
+                    if *apply & Apply::SecondHalf != Apply::None {
                         saver.lock().unwrap().monitor(&mut self.wave_function)
                     };
                 }
@@ -183,7 +183,8 @@ impl Propagation {
 
     /// Performs propagation of the `wave_function` for the time given by `TimeGrid`.
     pub fn propagate(&mut self) {
-        for _ in 0..self.time_grid.step_no {
+        for i in 0..self.time_grid.step_no {
+            println!("step no: {}, time: {}", i, i as f64 * self.time_grid.step);
             self.step();
         }
     }

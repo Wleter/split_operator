@@ -91,7 +91,6 @@ pub fn associated_legendre_diagonalization_operator(polar_grid: &Grid, omega: is
 /// Creates diagonalization to Associated Legendre polynomials eigenbasis for given polar_grid and omega_grid
 pub fn associated_legendre_operator(polar_grid: &Grid, omega_grid: &Grid) -> StateMatrixTransformation {
     let l_max = polar_grid.nodes_no as i64 - 1;
-    let l: Vec<i64> = (0..=l_max).collect();
 
     let l_grid = Grid::new_linear_countable(
         "red_angular_momentum",
@@ -101,24 +100,20 @@ pub fn associated_legendre_operator(polar_grid: &Grid, omega_grid: &Grid) -> Sta
         polar_grid.dimension_no,
     );
 
-    let mut legendre_diagonalization = MatrixTransformation::new(&polar_grid, l_grid);
-    let mut transformation = Array2::<Complex64>::zeros((polar_grid.nodes_no, polar_grid.nodes_no));
+    let mut legendre_diagonalization = StateMatrixTransformation::new(omega_grid.dimension_no, &polar_grid, l_grid);
 
-    for j in 0..polar_grid.nodes_no {
-        let pl = legendre_polynomials(l_max as usize, polar_grid.nodes[j].cos());
-        for i in 0..polar_grid.nodes_no {
-            transformation[[i, j]] = Complex64::from((l[i] as f64 + 0.5).sqrt() * pl[i]);
-        }
-    }
-    let inverse_transformation = transformation.clone().reversed_axes();
 
-    for j in 0..polar_grid.nodes_no {
-        for i in 0..polar_grid.nodes_no {
-            transformation[[i, j]] *= polar_grid.weights[j];
-        }
+    let mut transformations = Vec::with_capacity(omega_grid.nodes_no);
+    let mut inverses = Vec::with_capacity(omega_grid.nodes_no);
+    for &omega in &omega_grid.nodes {
+        let transformation = associated_legendre_diagonalization_operator(polar_grid, omega as isize);
+        let [transformation, inverse] = transformation.get_diagonalization_matrices();
+
+        transformations.push(transformation);
+        inverses.push(inverse);
     }
 
-    legendre_diagonalization.set_diagonalization_matrix(transformation, inverse_transformation);
+    legendre_diagonalization.set_diagonalization_matrices(transformations, inverses);
 
     legendre_diagonalization
 }

@@ -49,6 +49,10 @@ impl MatrixTransformation {
         self.transformation = transformation;
         self.inverse_transformation = inverse_transformation;
     }
+
+    pub fn get_diagonalization_matrices(self) -> [Array2<Complex64>; 2] {
+        [self.transformation, self.inverse_transformation]
+    }
 }
 
 impl Transformation for MatrixTransformation {

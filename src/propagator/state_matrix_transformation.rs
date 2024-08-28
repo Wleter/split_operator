@@ -8,8 +8,6 @@ use num::complex::Complex64;
 #[derive(Clone)]
 pub struct StateMatrixTransformation {
     dimension_no: usize,
-    dimension_size: usize,
-
     dimension_no_dependent: usize,
 
     transformations: Vec<Array2<Complex64>>,
@@ -28,7 +26,6 @@ impl StateMatrixTransformation {
 
         StateMatrixTransformation {
             dimension_no: grid.dimension_no,
-            dimension_size: grid.nodes_no,
             dimension_no_dependent,
             transformations: Vec::new(),
             inverse_transformations: Vec::new(),
@@ -49,19 +46,29 @@ impl StateMatrixTransformation {
 impl Transformation for StateMatrixTransformation {
     #[inline(always)]
     fn transform(&mut self, wave_function: &mut WaveFunction) {
-        // wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
-        // wave_function.change_observer.possible_norm_change = true;
+        wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
+        wave_function.change_observer.possible_norm_change = true;
 
-        // Zip::from(wave_function.array.lanes_mut(Axis(self.dimension_no)))
-        //     .par_for_each(|mut lane| lane.assign(&self.transformation.dot(&lane)));
+        self.transformations.iter()
+            .zip(wave_function.array.axis_iter_mut(Axis(self.dimension_no_dependent)))
+            .for_each(|(t, mut array)| {
+                Zip::from(array.lanes_mut(Axis(self.dimension_no)))
+                    .par_for_each(|mut lane| lane.assign(&t.dot(&lane)))
+            }
+        )
     }
 
     #[inline(always)]
     fn inverse_transform(&mut self, wave_function: &mut WaveFunction) {
-        // wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
-        // wave_function.change_observer.possible_norm_change = true;
+        wave_function.grids[self.dimension_no].swap(&mut self.grid_transformation);
+        wave_function.change_observer.possible_norm_change = true;
 
-        // Zip::from(wave_function.array.lanes_mut(Axis(self.dimension_no)))
-        //     .par_for_each(|mut lane| lane.assign(&self.inverse_transformation.dot(&lane)));
+        self.inverse_transformations.iter()
+            .zip(wave_function.array.axis_iter_mut(Axis(self.dimension_no_dependent)))
+            .for_each(|(t, mut array)| {
+                Zip::from(array.lanes_mut(Axis(self.dimension_no)))
+                    .par_for_each(|mut lane| lane.assign(&t.dot(&lane)))
+            }
+        )
     }
 }

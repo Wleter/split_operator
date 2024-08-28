@@ -5,6 +5,7 @@ pub mod n_dim_propagator;
 pub mod one_dim_propagator;
 pub mod propagator_factory;
 pub mod non_diagonal_propagator;
+pub mod state_matrix_transformation;
 
 use crate::{loss_checker::LossChecker, wave_function::WaveFunction};
 

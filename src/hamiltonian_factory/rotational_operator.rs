@@ -9,8 +9,9 @@ pub fn rotational_hamiltonian(
     polar_grid: &Grid,
     collision_params: &Particles,
     rotational_const: f64,
+    omega: i64
 ) -> Array2<f64> {
-    let l: Vec<i64> = (0..polar_grid.nodes_no as i64).collect();
+    let l: Vec<i64> = (omega.abs()..(polar_grid.nodes_no as i64 + omega.abs())).collect();
     let r = Array1::<f64>::from_vec(radial_grid.nodes.clone());
 
     let mut operator_matrix = Array2::<f64>::zeros((radial_grid.nodes_no, polar_grid.nodes_no));

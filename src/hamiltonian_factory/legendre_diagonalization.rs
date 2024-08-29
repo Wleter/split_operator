@@ -1,6 +1,5 @@
 use ndarray::Array2;
 use num::complex::Complex64;
-use faer_ext::*;
 use crate::propagator::state_matrix_transformation::StateMatrixTransformation;
 
 use crate::special_functions::{associated_legendre_polynomials, normalization};
@@ -51,7 +50,7 @@ pub fn associated_legendre_diagonalization_operator(polar_grid: &Grid, omega: is
     let l: Vec<u32> = (0..=l_max).collect();
 
     let l_grid = Grid::new_linear_countable(
-        "red_angular_momentum",
+        "angular_momentum",
         0.0,
         l_max as f64,
         l_max as usize + 1,
@@ -63,23 +62,15 @@ pub fn associated_legendre_diagonalization_operator(polar_grid: &Grid, omega: is
 
     for j in 0..polar_grid.nodes_no {
         let pl = associated_legendre_polynomials(l_max as usize, omega, polar_grid.nodes[j].cos());
-        for i in 0..polar_grid.nodes_no {
-            transformation[[i, j]] = Complex64::from(
-                normalization(l[i] + omega.unsigned_abs() as u32, omega as i32) * polar_grid.weights[j].sqrt() * pl[i]
-            );
+        for i in omega.unsigned_abs()..polar_grid.nodes_no {
+            transformation[[i, j]] = Complex64::from(normalization(l[i], omega as i32) * pl[i]);
         }
     }
-
-    let mat = transformation.view().into_faer_complex().transpose(); 
-    let q = mat.qr().compute_q();
-    let mut transformation = q.transpose().into_ndarray_complex().to_owned();
-
-    let mut inverse_transformation = transformation.clone().reversed_axes();
+    let inverse_transformation = transformation.clone().reversed_axes();
 
     for j in 0..polar_grid.nodes_no {
         for i in 0..polar_grid.nodes_no {
-            transformation[[i, j]] *= polar_grid.weights[j].sqrt();
-            inverse_transformation[[j, i]] /= polar_grid.weights[j].sqrt()
+            transformation[[i, j]] *= polar_grid.weights[j];
         }
     }
 
@@ -93,7 +84,7 @@ pub fn associated_legendre_operator(polar_grid: &Grid, omega_grid: &Grid) -> Sta
     let l_max = polar_grid.nodes_no as i64 - 1;
 
     let l_grid = Grid::new_linear_countable(
-        "red_angular_momentum",
+        "angular_momentum",
         0.0,
         l_max as f64,
         l_max as usize + 1,
@@ -101,7 +92,6 @@ pub fn associated_legendre_operator(polar_grid: &Grid, omega_grid: &Grid) -> Sta
     );
 
     let mut legendre_diagonalization = StateMatrixTransformation::new(omega_grid.dimension_no, &polar_grid, l_grid);
-
 
     let mut transformations = Vec::with_capacity(omega_grid.nodes_no);
     let mut inverses = Vec::with_capacity(omega_grid.nodes_no);

@@ -136,7 +136,7 @@ pub fn normalization(l: u32, m: i32) -> f64 {
         1.0
     };
 
-    (norm2 * (2.0 * l as f64 + 1.)).sqrt()
+    (norm2 * (l as f64 + 0.5)).sqrt()
 }
 
 #[cfg(test)]

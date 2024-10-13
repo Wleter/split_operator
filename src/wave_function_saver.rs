@@ -53,7 +53,7 @@ impl Saver for WaveFunctionSaver {
             let density = wave_function.density();
 
             let density2d: Array2<f64> = density
-                .into_shape((self.x_grid.nodes_no, self.y_grid.nodes_no))
+                .into_shape_with_order((self.x_grid.nodes_no, self.y_grid.nodes_no))
                 .unwrap();
 
             self.data_array

@@ -7,14 +7,15 @@ edition = "2021"
 
 [dependencies]
 quantum = { git = "https://github.com/Wleter/quantum" }
-num = "*"
-rustfft = "*"
-criterion = "*"
-ndarray-npy = "0.8.1"
-gauss-quad = "0.1.9"
-rayon = "*"
-ndarray = { version = "0.15.6", features = ["rayon", "matrixmultiply-threading"] }
-enum-flags = "*"
+num = "0.4.3"
+rustfft = "6.2.0"
+ndarray-npy = "0.9.1"
+rayon = "1.10.0"
+ndarray = { version = "0.16.1", features = ["rayon", "matrixmultiply-threading"] }
+enum-flags = "0.3.0"
+
+[dev-dependencies]
+criterion = "0.5.1"
 
 [profile.test]
 opt-level = 3

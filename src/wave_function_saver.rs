@@ -6,7 +6,6 @@ use crate::{grid::Grid, saver::Saver, time_grid::TimeGrid, wave_function::WaveFu
 /// Saves density of a wave function that is in 2d space during propagation.
 #[derive(Clone)]
 pub struct WaveFunctionSaver {
-    path: String,
     name: String,
     current_frame: usize,
     frames_no: usize,
@@ -20,7 +19,6 @@ pub struct WaveFunctionSaver {
 impl WaveFunctionSaver {
     /// Creates new `WaveFunctionSaver` with given path, name, time grid, x grid, y grid, frames number.
     pub fn new(
-        path: String,
         name: String,
         time_grid: &TimeGrid,
         x_grid: &Grid,
@@ -28,7 +26,6 @@ impl WaveFunctionSaver {
         frames_no: usize,
     ) -> WaveFunctionSaver {
         WaveFunctionSaver {
-            path,
             name,
             current_frame: 0,
             frames_no,
@@ -67,27 +64,31 @@ impl Saver for WaveFunctionSaver {
     }
 
     fn save(&self) -> Result<(), &str> {
-        let path = [self.path.clone(), self.name.clone()].join("");
+        let path = std::env::current_dir()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
 
-        let result = write_npy(&format!("{path}.npy"), &self.data_array);
+        let result = write_npy(&format!("{path}/{}.npy", self.name), &self.data_array);
         if result.is_err() {
             return Err("Failed to save wave function");
         }
 
         let x_grid: Array1<f64> = Array::from_vec(self.x_grid.nodes.clone());
-        let result = write_npy(&format!("{path}_x_grid.npy"), &x_grid);
+        let result = write_npy(&format!("{path}/{}_x_grid.npy", self.name), &x_grid);
         if result.is_err() {
             return Err("Failed to save r grid");
         }
 
         let y_grid: Array1<f64> = Array::from_vec(self.y_grid.nodes.clone());
-        let result = write_npy(&format!("{path}_y_grid.npy"), &y_grid);
+        let result = write_npy(&format!("{path}/{}_y_grid.npy", self.name), &y_grid);
         if result.is_err() {
             return Err("Failed to save theta grid");
         }
 
         let times: Array1<f64> = Array::from_vec(self.times.clone());
-        let result = write_npy(&format!("{path}_time.npy"), &times);
+        let result = write_npy(&format!("{path}/{}_time.npy", self.name), &times);
         if result.is_err() {
             return Err("Failed to save time grid")
         }
@@ -103,7 +104,6 @@ impl Saver for WaveFunctionSaver {
 /// Saves density of a wave function on given dimension during propagation.
 #[derive(Clone)]
 pub struct StateSaver {
-    path: String,
     name: String,
     current_frame: usize,
     frames_no: usize,
@@ -116,14 +116,12 @@ pub struct StateSaver {
 impl StateSaver {
     /// Creates new `StateSaver` with given path, name, time grid, state grid, frames number.
     pub fn new(
-        path: String,
         name: String,
         time_grid: &TimeGrid,
         state_grid: &Grid,
         frames_no: usize,
     ) -> StateSaver {
         StateSaver {
-            path,
             name,
             current_frame: 0,
             frames_no,
@@ -153,21 +151,25 @@ impl Saver for StateSaver {
     }
 
     fn save(&self) -> Result<(), &str> {
-        let path = [self.path.clone(), self.name.clone()].join("");
+        let path = std::env::current_dir()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
 
-        let result = write_npy(&format!("{path}.npy"), &self.data_array);
+        let result = write_npy(&format!("{path}/{}.npy", self.name), &self.data_array);
         if result.is_err() {
             return Err("Failed to save wave function");
         }
 
         let state_grid: Array1<f64> = Array::from_vec(self.state_grid.nodes.clone());
-        let result = write_npy(&format!("{path}_{}_grid.npy", self.state_grid.name), &state_grid);
+        let result = write_npy(&format!("{path}/{}_{}_grid.npy", self.name, self.state_grid.name), &state_grid);
         if result.is_err() {
             return Err("Failed to save state grid");
         }
 
         let times: Array1<f64> = Array::from_vec(self.times.clone());
-        let result = write_npy(&format!("{path}_time.npy"), &times);
+        let result = write_npy(&format!("{path}/{}_time.npy", self.name), &times);
         if result.is_err() {
             return Err("Failed to save time grid")
         }

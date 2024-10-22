@@ -85,8 +85,7 @@ pub mod harmonic_trap {
             );
 
             let saver = StateSaver::new(
-                format!("{path}/tests/test_data/"),
-                name.to_string(),
+                format!("tests/test_data/{name}"),
                 &time_grid,
                 &grid,
                 50,

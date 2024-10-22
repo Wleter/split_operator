@@ -51,7 +51,7 @@ impl LossSaver {
             .unwrap()
             .to_string();
 
-        let mut file = File::create(format!("{path}/data/{}.dat", self.name)).unwrap();
+        let mut file = File::create(format!("{path}/{}.dat", self.name)).unwrap();
         file.write_all(buf.as_bytes()).unwrap();
     }
 }

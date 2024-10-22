@@ -56,11 +56,8 @@ mod harmonic_tests {
             TimeStep::Full,
         );
 
-        let path = std::env::current_dir().unwrap();
-        let path = path.to_str().unwrap();
         let saver = StateSaver::new(
-            format!("{path}/tests/test_data/"),
-            "free_wave".to_string(),
+            format!("tests/test_data/free_wave"),
             &time_grid,
             &grid,
             50,

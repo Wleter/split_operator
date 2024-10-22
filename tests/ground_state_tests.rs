@@ -87,6 +87,7 @@ mod ground_state_tests {
             for (i, x) in grid.nodes.iter().enumerate() {
                 potential_array[i] = lennard_jones(*x, d6, r6);
             }
+            
             let path = std::env::current_dir().unwrap();
             let path = path.to_str().unwrap();
             ndarray_npy::write_npy(
@@ -111,10 +112,8 @@ mod ground_state_tests {
             );
             let fft_transform = FFTTransformation::new(&grid, "momentum");
 
-            let name = "lj_ground_space".to_string();
             let wave_function_saver = StateSaver::new(
-                format!("{path}/tests/test_data/"),
-                name,
+                format!("tests/test_data/lj_ground_space"),
                 &time_grid,
                 &grid,
                 120,

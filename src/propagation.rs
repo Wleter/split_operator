@@ -277,7 +277,8 @@ impl Propagation {
                 _ => panic!(""),
             };
 
-            let energy = -(self.wave_function.norm() - decay).ln() / self.time_grid.step;
+            // 2 comes from norm being power of 2 of the wave function
+            let energy = -(self.wave_function.norm() - decay).ln() / self.time_grid.step / 2.;
             energy
         } else {
             let mut wave_before = self.wave_function.clone();

@@ -32,8 +32,7 @@ impl LossSaver {
 
         if self.current_frame % frequency == 0 && self.current_frame / frequency < self.frames_no {
             self.losses.push(loss);
-            self.times
-                .push((self.current_frame as f64 + 1.0) * self.step);
+            self.times.push((self.current_frame as f64 + 1.0) / 2. * self.step);
         }
 
         self.current_frame += 1;

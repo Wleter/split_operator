@@ -27,7 +27,8 @@ impl LossSaver {
     }
 
     pub fn monitor(&mut self, loss: f64) {
-        let frequency = self.total_frames / self.frames_no;
+        // It is monitored two times during the propagation step.
+        let frequency = 2 * self.total_frames / self.frames_no;
 
         if self.current_frame % frequency == 0 && self.current_frame / frequency < self.frames_no {
             self.losses.push(loss);
